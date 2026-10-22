@@ -7,8 +7,9 @@ Lakukan setelah install (restart sesi). Centang bila lulus.
 - [ ] `claude plugin validate /config/workspace/ai/skillset` → lulus
 - [ ] `node scripts/scan.mjs --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → katalog tergenerate di /tmp/skillset-smoke
 - [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; ubah versi fixture → exit 1
-- [ ] `node scripts/sync.mjs --dry-run` → exit 0, `dryRunCommands` tercetak, tanpa spawn nyata
-- [ ] `printf '{bad' > /tmp/skillset-smoke/manifest.json && node scripts/sync.mjs --data-dir /tmp/skillset-smoke` → exit 2, pesan berisi `manifest.json tidak valid` (bukan `sync gagal`)
+- [ ] (setelah `/skillset:init`) `node scripts/sync.mjs --dry-run` → exit 0, `dryRunCommands` tercetak, tanpa spawn nyata
+- [ ] `mkdir -p /tmp/skillset-smoke-bad && printf '{bad' > /tmp/skillset-smoke-bad/manifest.json && node scripts/sync.mjs --data-dir /tmp/skillset-smoke-bad` → exit 2, pesan berisi `manifest.json tidak valid` (bukan `sync gagal`) — dir terpisah agar cek lain tetap idempoten
+- [ ] `mkdir -p /tmp/skillset-smoke-fail && printf '{"autoUpdate":true,"plugins":["nonexistent-plugin@nowhere"]}' > /tmp/skillset-smoke-fail/manifest.json && node scripts/sync.mjs --data-dir /tmp/skillset-smoke-fail --plugins-file tests/fixtures/installed.json` → **exit 0** walaupun `failed` berisi entri (non-blocking terverifikasi)
 
 ## /skillset:init (end-to-end, menyentuh home asli — memang tujuan plugin)
 - [ ] `/skillset:init` → manifest tergenerate berisi plugin user-scope saat ini; `~/.claude/skillset/data/catalog.md` ada dan memuat superpowers dkk.
@@ -28,4 +29,4 @@ Lakukan setelah install (restart sesi). Centang bila lulus.
 
 ## Clean-up fixture
 - [ ] Kembalikan fixture: `git checkout -- tests/fixtures/installed.json`
-- [ ] `rm -rf /tmp/skillset-smoke`
+- [ ] `rm -rf /tmp/skillset-smoke /tmp/skillset-smoke-bad /tmp/skillset-smoke-fail`

@@ -571,7 +571,7 @@ git commit -m "feat(skillset): scan — katalog plugin terpasang + drift check -
   - `diffManifest(manifest, installed): {missing: string[], present: string[]}`.
   - `buildInstallCmd(key): string[]` → `['claude','plugin','install',key]`.
   - `buildUpdateCmd(key): string[]` → `['claude','plugin','update',key]`.
-  - `runSync({manifestFile, pluginsFile, dryRun, spawn}): {installed: [], updated: [], failed: [{key, error}], dryRunCommands?: [][]}` — `spawn` injectable (default `spawnSync`), signature `(cmdArray) => {status, stdout, stderr}`.
+  - `runSync({manifestFile, pluginsFile, dryRun, spawn}): {installed: [], updated: [], failed: [{key, error}], dryRunCommands?: [][]}` — `spawn` injectable (default `spawnSync`), signature `(cmd: string, args: string[], opts: {encoding: 'utf8'}) => hasil spawnSync ({status, stdout, stderr, error?})` (diamend hasil review 95232c9).
   - CLI: `--generate-manifest` (tidak menimpa kecuali `--force`); default mode install-missing + `claude plugin marketplace update` + update-all; exit 0 selalu kecuali manifest hilang → exit 2.
 
 - [ ] **Step 1: Tulis failing test `tests/sync.test.mjs`**
