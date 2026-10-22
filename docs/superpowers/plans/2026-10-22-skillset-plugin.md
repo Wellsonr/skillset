@@ -17,7 +17,7 @@
 - Nama plugin `skillset`; marketplace lokal bernama `skillset-local` dengan `"source": "./"`.
 - Semua referensi file plugin dari command memakai `${CLAUDE_PLUGIN_ROOT}`.
 - Isi command/SKILL.md/template/rules: bahasa Indonesia. Identifier, nama fungsi, komentar kode: English.
-- Kontrak exit code: `scan.mjs --check` exit 0 = segar, 1 = drift/katalog hilang. `sync.mjs` selalu exit 0 kecuali manifest hilang (exit 2) — kegagalan per-plugin dilaporkan di output, TIDAK memblok workflow (spec §7).
+- Kontrak exit code: `scan.mjs --check` exit 0 = segar, 1 = drift/katalog hilang. `sync.mjs` exit 0 = fase sinkron selesai (kegagalan per-plugin & `marketplace update` dilaporkan di `failed`, TIDAK memblok workflow — spec §7); exit 2 = manifest hilang, manifest JSON tidak valid, atau kegagalan fase sinkron (`sync gagal: …`). *(Amend review 2026-10-22: path exit-2 `sync gagal` kini di-enshrine + ter-test; semula throw salah label "manifest.json tidak valid".)*
 - Data runtime (`manifest.json`, `rules.md`, `catalog.json`, `catalog.md`) TIDAK pernah di-commit ke repo.
 - Satu commit per task, pesan conventional commit (`feat:`, `test:`, `docs:`).
 - Direktori kerja semua perintah: `/config/workspace/ai/skillset` (repo root polyrepo `/config/workspace`; JANGAN `git add` file di luar project ini).
