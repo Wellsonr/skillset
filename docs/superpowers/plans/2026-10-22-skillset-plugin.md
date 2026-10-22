@@ -176,7 +176,7 @@ test('handles key without @marketplace', () => {
 
 test('parseCliArgs supports space, equals, and numeric flags', () => {
   const { flags, positional } = parseCliArgs([
-    'scan.mjs', 'keyword1', '--check', '--data-dir', '/tmp/d', '--top=20', 'keyword2',
+    'keyword1', '--check', '--data-dir', '/tmp/d', '--top=20', 'keyword2',
   ]);
   assert.equal(flags.check, true);
   assert.equal(flags['data-dir'], '/tmp/d');
