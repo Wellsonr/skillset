@@ -83,17 +83,36 @@ export async function main(argv) {
   const catalogFile = join(dataDir, 'catalog.json');
 
   if (flags.check) {
-    let result;
+    let installed;
     try {
-      result = checkDrift(readInstalledUserPlugins(pluginsFile), readJson(catalogFile));
-    } catch {
-      result = { fresh: false, changes: [{ type: 'missing-catalog' }] };
+      installed = readInstalledUserPlugins(pluginsFile);
+    } catch (err) {
+      console.error(`${pluginsFile} tidak valid: ${err.message}`);
+      return 2;
     }
+    if (!existsSync(catalogFile)) {
+      console.log(JSON.stringify({ fresh: false, changes: [{ type: 'missing-catalog' }] }));
+      return 1;
+    }
+    let catalog;
+    try {
+      catalog = readJson(catalogFile);
+    } catch (err) {
+      console.error(`${catalogFile} tidak valid: ${err.message}`);
+      return 2;
+    }
+    const result = checkDrift(installed, catalog);
     console.log(JSON.stringify(result));
     return result.fresh ? 0 : 1;
   }
 
-  const catalog = scanPlugins({ pluginsFile });
+  let catalog;
+  try {
+    catalog = scanPlugins({ pluginsFile });
+  } catch (err) {
+    console.error(`${pluginsFile} tidak valid: ${err.message}`);
+    return 2;
+  }
   ensureDir(dataDir);
   writeJson(catalogFile, catalog);
   writeFileSync(join(dataDir, 'catalog.md'), renderCatalogMd(catalog));

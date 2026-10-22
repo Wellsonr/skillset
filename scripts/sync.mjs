@@ -72,7 +72,14 @@ export function main(argv) {
     console.error(JSON.stringify({ error: 'manifest-missing', hint: 'node sync.mjs --generate-manifest' }));
     return 2;
   }
-  console.log(JSON.stringify(runSync({ manifestFile, pluginsFile, dryRun: Boolean(flags['dry-run']) })));
+  let result;
+  try {
+    result = runSync({ manifestFile, pluginsFile, dryRun: Boolean(flags['dry-run']) });
+  } catch (err) {
+    console.error(`manifest.json tidak valid: ${err.message}`);
+    return 2;
+  }
+  console.log(JSON.stringify(result));
   return 0;
 }
 

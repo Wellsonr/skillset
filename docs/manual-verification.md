@@ -5,6 +5,7 @@ Lakukan setelah install (restart sesi). Centang bila lulus.
 ## Unit & struktur
 - [ ] `node --test tests/*.test.mjs` → semua PASS (lib, scan, sync, query)
 - [ ] `claude plugin validate /config/workspace/ai/skillset` → lulus
+- [ ] `node scripts/scan.mjs --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → katalog tergenerate di /tmp/skillset-smoke
 - [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; ubah versi fixture → exit 1
 
 ## /skillset:init (end-to-end, menyentuh home asli — memang tujuan plugin)
@@ -21,7 +22,8 @@ Lakukan setelah install (restart sesi). Centang bila lulus.
 - [ ] Task trivial (pertanyaan kecil nyata) → router menjawab langsung tanpa rantai
 
 ## Drift
-- [ ] Jalankan `claude plugin update superpowers`, lalu `node scripts/scan.mjs --check` → exit 1 (drift terdeteksi)
+- [ ] Jalankan `claude plugin update superpowers`, lalu `node scripts/scan.mjs --check` → exit 1 (drift terdeteksi); lalu jalankan `/skillset:update` (atau `node scripts/scan.mjs`) agar katalog segar kembali
 
 ## Clean-up fixture
+- [ ] Kembalikan fixture: `git checkout -- tests/fixtures/installed.json`
 - [ ] `rm -rf /tmp/skillset-smoke`

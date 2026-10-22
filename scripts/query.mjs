@@ -52,7 +52,13 @@ export function main(argv) {
     console.error('Katalog belum ada. Jalankan /skillset:init (atau: node scripts/scan.mjs).');
     return 2;
   }
-  const catalog = readJson(catalogFile);
+  let catalog;
+  try {
+    catalog = readJson(catalogFile);
+  } catch (err) {
+    console.error(`${catalogFile} tidak valid: ${err.message}`);
+    return 2;
+  }
   if (flags.summary) {
     console.log(summarize(catalog));
     return 0;
