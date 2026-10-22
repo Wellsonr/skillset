@@ -1,0 +1,15 @@
+{
+  "name": "skillset-local",
+  "owner": { "name": "Wellson" },
+  "metadata": {
+    "description": "Marketplace lokal untuk plugin skillset",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "skillset",
+      "description": "Router skill lintas plugin dengan katalog otomatis, auto-install/update, dan rules custom workflow-only.",
+      "source": "./"
+    }
+  ]
+}
