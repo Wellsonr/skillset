@@ -1,4 +1,4 @@
-// Manifest generator + installer/updater. Never blocks workflow: per-plugin failures are reported, exit stays 0.
+// Manifest generator + installer/updater. Per-plugin & marketplace failures never abort the sync run (reported in failed[]); CLI exit 0 = sync phase complete, exit 2 = manifest/installed.json hilang, rusak, atau tidak bisa dibaca.
 import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
@@ -34,7 +34,11 @@ export function runSync({ manifestFile, pluginsFile, dryRun = false, spawn = spa
   const result = { installed: [], updated: [], failed: [] };
   const run = (cmd) => {
     if (dryRun) { (result.dryRunCommands ??= []).push(cmd); return { status: 0, stdout: '', stderr: '' }; }
-    return spawn(cmd[0], cmd.slice(1), { encoding: 'utf8' });
+    try {
+      return spawn(cmd[0], cmd.slice(1), { encoding: 'utf8' });
+    } catch (err) {
+      return { status: -1, error: err };
+    }
   };
   const errorText = (r) => {
     if (r.error) return String(r.error.message ?? r.error);
@@ -47,7 +51,7 @@ export function runSync({ manifestFile, pluginsFile, dryRun = false, spawn = spa
     else result.failed.push({ key, error: errorText(r) });
   }
   const mr = run(['claude', 'plugin', 'marketplace', 'update']);
-  if (mr.status !== 0 || mr.error) result.failed.push({ key: 'marketplace', error: errorText(mr) });
+  if (mr.status !== 0) result.failed.push({ key: 'marketplace', error: errorText(mr) });
   for (const key of [...present, ...result.installed]) {
     const r = run(buildUpdateCmd(key));
     if (r.status === 0) result.updated.push(key);
@@ -81,7 +85,14 @@ export function main(argv, deps = {}) {
   try {
     readJson(manifestFile);
   } catch (err) {
-    console.error(`manifest.json tidak valid: ${err.message}`);
+    const label = err instanceof SyntaxError ? 'manifest.json tidak valid' : 'manifest.json tidak bisa dibaca';
+    console.error(`${label}: ${err.message}`);
+    return 2;
+  }
+  try {
+    readInstalledUserPlugins(pluginsFile);
+  } catch (err) {
+    console.error(`${pluginsFile} tidak bisa dibaca: ${err.message}`);
     return 2;
   }
   let result;
