@@ -736,7 +736,7 @@ if (process.argv[1] && process.argv[1].endsWith('sync.mjs')) {
 
 - [ ] **Step 4: Jalankan test, pastikan PASS + regresi**
 
-Run: `node --test tests/`
+Run: `node --test tests/*.test.mjs`
 Expected: semua PASS (lib 6 + scan 6 + sync 5).
 
 - [ ] **Step 5: Commit**
@@ -1230,7 +1230,7 @@ Runtime (bukan bagian repo): `~/.claude/skillset/data/` — `manifest.json`, `ru
 
 ## Development
 
-    node --test tests/          # unit test semua script
+    node --test tests/*.test.mjs   # unit test semua script
     claude plugin validate /config/workspace/ai/skillset
 
 Spec: `docs/superpowers/specs/2026-10-22-skillset-plugin-design.md` · Plan: `docs/superpowers/plans/2026-10-22-skillset-plugin.md`
@@ -1244,7 +1244,7 @@ Spec: `docs/superpowers/specs/2026-10-22-skillset-plugin-design.md` · Plan: `do
 Lakukan setelah install (restart sesi). Centang bila lulus.
 
 ## Unit & struktur
-- [ ] `node --test tests/` → semua PASS (lib, scan, sync, query)
+- [ ] `node --test tests/*.test.mjs` → semua PASS (lib, scan, sync, query)
 - [ ] `claude plugin validate /config/workspace/ai/skillset` → lulus
 - [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; ubah versi fixture → exit 1
 
