@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -300,4 +301,68 @@ test('generate-manifest exits 2 with message when manifest cannot be written', (
   const output = errs.join('\n');
   assert.ok(output.includes('gagal generate manifest'), `expected write-failure label in: ${output}`);
   rmSync(dir, { recursive: true, force: true });
+});
+
+test('main success path exits 0 and prints JSON result', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
+  const manifestFile = join(dir, 'manifest.json');
+  writeJson(manifestFile, { autoUpdate: true, plugins: ['a@m1'] });
+  const pluginsFile = join(dir, 'installed.json');
+  writeFileSync(pluginsFile, JSON.stringify({ plugins: {
+    'a@m1': [{ scope: 'user', installPath: '/y', version: '2' }],
+  }}));
+  const spawn = () => ({ status: 0, stdout: '', stderr: '' });
+  const logs = [];
+  const origLog = console.log;
+  console.log = (msg) => logs.push(String(msg));
+  let code;
+  try {
+    code = main(['--data-dir', dir, '--plugins-file', pluginsFile], { spawn });
+  } finally {
+    console.log = origLog;
+  }
+  assert.equal(code, 0);
+  assert.deepEqual(JSON.parse(logs.join('\n')), { installed: [], updated: ['a@m1'], failed: [] });
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('errorText falls back to exit status when both streams are empty Buffers', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
+  const manifestFile = join(dir, 'manifest.json');
+  writeJson(manifestFile, { autoUpdate: true, plugins: ['a@m1'] });
+  const pluginsFile = join(dir, 'installed.json');
+  writeFileSync(pluginsFile, JSON.stringify({ plugins: {
+    'a@m1': [{ scope: 'user', installPath: '/y', version: '2' }],
+  }}));
+  const spawn = (cmd, args) => args && args[0] === 'plugin' && args[1] === 'update'
+    ? { status: 1, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) }
+    : { status: 0, stdout: '', stderr: '' };
+  const result = runSync({ manifestFile, pluginsFile, dryRun: false, spawn });
+  assert.deepEqual(result.failed, [{ key: 'a@m1', error: 'exit 1' }]);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('runSync records install status:1 failure and skips its update', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
+  const manifestFile = join(dir, 'manifest.json');
+  writeJson(manifestFile, { autoUpdate: true, plugins: ['a@m1', 'c@m3'] });
+  const pluginsFile = join(dir, 'installed.json');
+  writeFileSync(pluginsFile, JSON.stringify({ plugins: {
+    'a@m1': [{ scope: 'user', installPath: '/y', version: '2' }],
+  }}));
+  const spawn = (cmd, args) => args[1] === 'install'
+    ? { status: 1, stdout: '', stderr: 'install down' }
+    : { status: 0, stdout: '', stderr: '' };
+  const result = runSync({ manifestFile, pluginsFile, dryRun: false, spawn });
+  assert.deepEqual(result.installed, []);
+  assert.deepEqual(result.updated, ['a@m1']);
+  assert.deepEqual(result.failed, [{ key: 'c@m3', error: 'install down' }]);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('real spawnSync contract: missing binary yields status null + ENOENT error', () => {
+  const r = spawnSync('skillset-no-such-binary-xyz', ['--version'], { encoding: 'utf8' });
+  assert.equal(r.status, null);
+  assert.ok(r.error instanceof Error, `r.error must be set, got: ${r.error}`);
+  assert.equal(r.error.code, 'ENOENT');
 });

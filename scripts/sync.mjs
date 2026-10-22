@@ -1,4 +1,4 @@
-// Manifest generator + installer/updater. Per-plugin & marketplace failures never abort the sync run (reported in failed[]); CLI exit 0 = sync phase complete, exit 2 = manifest/installed.json hilang, rusak, atau tidak bisa dibaca.
+// Manifest generator + installer/updater. Per-plugin & marketplace failures never abort the sync run (reported in failed[]). CLI exit 0 = sync phase complete; exit 2 = manifest or installed.json missing/unreadable/invalid, generate-manifest failure, or unexpected sync error (last resort).
 import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
