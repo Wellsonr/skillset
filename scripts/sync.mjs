@@ -42,8 +42,8 @@ export function runSync({ manifestFile, pluginsFile, dryRun = false, spawn = spa
   };
   const errorText = (r) => {
     if (r.error) return String(r.error.message ?? r.error);
-    const out = r.stderr || r.stdout;
-    return (out ? String(out) : `exit ${r.status}`).trim();
+    const out = [r.stderr, r.stdout].map((s) => (s == null ? '' : String(s))).find((s) => s.trim());
+    return out ? out.trim() : `exit ${r.status}${r.signal ? ` (${r.signal})` : ''}`;
   };
   for (const key of missing) {
     const r = run(buildInstallCmd(key));
@@ -72,8 +72,17 @@ export function main(argv, deps = {}) {
       console.log(JSON.stringify({ manifestExists: true, file: manifestFile }));
       return 0;
     }
-    ensureDir(dataDir);
-    writeJson(manifestFile, generateManifest(readInstalledUserPlugins(pluginsFile)));
+    if (!existsSync(pluginsFile)) {
+      console.error(`plugins file tidak ditemukan: ${pluginsFile}`);
+      return 2;
+    }
+    try {
+      ensureDir(dataDir);
+      writeJson(manifestFile, generateManifest(readInstalledUserPlugins(pluginsFile)));
+    } catch (err) {
+      console.error(`gagal generate manifest: ${err.message}`);
+      return 2;
+    }
     console.log(JSON.stringify({ generated: true, file: manifestFile }));
     return 0;
   }

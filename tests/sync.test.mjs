@@ -231,3 +231,73 @@ test('main keeps manifest tidak valid label for malformed manifest JSON', () => 
   assert.ok(errs.join('\n').includes('manifest.json tidak valid'));
   rmSync(dir, { recursive: true, force: true });
 });
+
+test('errorText falls back to stdout when stderr is whitespace-only', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
+  const manifestFile = join(dir, 'manifest.json');
+  writeJson(manifestFile, { autoUpdate: true, plugins: ['a@m1'] });
+  const pluginsFile = join(dir, 'installed.json');
+  writeFileSync(pluginsFile, JSON.stringify({ plugins: {
+    'a@m1': [{ scope: 'user', installPath: '/y', version: '2' }],
+  }}));
+  const spawn = (cmd, args) => args && args[0] === 'plugin' && args[1] === 'update'
+    ? { status: 1, stdout: 'the real reason', stderr: '  \n' }
+    : { status: 0, stdout: '', stderr: '' };
+  const result = runSync({ manifestFile, pluginsFile, dryRun: false, spawn });
+  assert.deepEqual(result.failed, [{ key: 'a@m1', error: 'the real reason' }]);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('errorText reports signal when process killed without output', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
+  const manifestFile = join(dir, 'manifest.json');
+  writeJson(manifestFile, { autoUpdate: true, plugins: ['a@m1'] });
+  const pluginsFile = join(dir, 'installed.json');
+  writeFileSync(pluginsFile, JSON.stringify({ plugins: {
+    'a@m1': [{ scope: 'user', installPath: '/y', version: '2' }],
+  }}));
+  const spawn = (cmd, args) => args && args[0] === 'plugin' && args[1] === 'update'
+    ? { status: null, signal: 'SIGKILL', stdout: '', stderr: '' }
+    : { status: 0, stdout: '', stderr: '' };
+  const result = runSync({ manifestFile, pluginsFile, dryRun: false, spawn });
+  assert.deepEqual(result.failed, [{ key: 'a@m1', error: 'exit null (SIGKILL)' }]);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('generate-manifest exits 2 when plugins file missing', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
+  const errs = [];
+  const origError = console.error;
+  console.error = (msg) => errs.push(String(msg));
+  let code;
+  try {
+    code = main(['--generate-manifest', '--data-dir', dir, '--plugins-file', join(dir, 'missing.json')]);
+  } finally {
+    console.error = origError;
+  }
+  assert.equal(code, 2);
+  const output = errs.join('\n');
+  assert.ok(output.includes('plugins file tidak ditemukan'), `expected missing-file hint in: ${output}`);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('generate-manifest exits 2 with message when manifest cannot be written', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
+  const blockFile = join(dir, 'not-a-dir');
+  writeFileSync(blockFile, 'x');
+  const pluginsFile = join(dir, 'installed.json');
+  writeFileSync(pluginsFile, JSON.stringify({ plugins: {} }));
+  const errs = [];
+  const origError = console.error;
+  console.error = (msg) => errs.push(String(msg));
+  let code;
+  try {
+    code = main(['--generate-manifest', '--force', '--data-dir', blockFile, '--plugins-file', pluginsFile]);
+  } finally {
+    console.error = origError;
+  }
+  assert.equal(code, 2);
+  const output = errs.join('\n');
+  assert.ok(output.includes('gagal generate manifest'), `expected write-failure label in: ${output}`);
+  rmSync(dir, { recursive: true, force: true });
+});
