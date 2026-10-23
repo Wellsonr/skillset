@@ -1,0 +1,8 @@
+# Local context tooling (not part of the published plugin)
+.dual-graph/
+.remember/
+CLAUDE.md
+
+# Node
+node_modules/
+*.log
