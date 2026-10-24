@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { scanPlugins, checkDrift, renderCatalogMd, main } from '../scripts/scan.mjs';
+import { scanPlugins, checkDrift, findDuplicates, renderCatalogMd, main } from '../scripts/scan.mjs';
 
 function makeFixture() {
   const dir = mkdtempSync(join(tmpdir(), 'skillset-scan-'));
@@ -90,5 +90,41 @@ test('CLI scan writes catalog.json and catalog.md', async () => {
   const catalog = JSON.parse(readFileSync(join(dataDir, 'catalog.json'), 'utf8'));
   assert.equal(catalog.plugins.length, 1);
   assert.ok(existsSync(join(dataDir, 'catalog.md')));
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('findDuplicates: same normalized name across plugins flagged; same-plugin ignored', () => {
+  const catalog = { plugins: [
+    { name: 'a', marketplace: 'm1', skills: [{ name: 'Review', description: 'Review code changes' }], commands: [], agents: [] },
+    { name: 'b', marketplace: 'm2', skills: [{ name: 'review', description: 'Totally different domain stuff' }], commands: [], agents: [] },
+  ]};
+  const d = findDuplicates(catalog);
+  assert.equal(d.length, 1);
+  assert.equal(d[0].sameName, true);
+  assert.deepEqual([d[0].a, d[0].b].sort(), ['a:Review', 'b:review']);
+});
+
+test('findDuplicates: jaccard >= threshold flagged, dissimilar not, empty catalog -> []', () => {
+  const catalog = { plugins: [
+    { name: 'a', marketplace: 'm1', skills: [{ name: 'tdd', description: 'test driven development write tests first' }], commands: [], agents: [] },
+    { name: 'b', marketplace: 'm2', skills: [{ name: 'tdd-guide', description: 'test driven development write the test first always' }], commands: [], agents: [] },
+    { name: 'c', marketplace: 'm3', skills: [{ name: 'paint', description: 'mix colors on canvas' }], commands: [], agents: [] },
+  ]};
+  const d = findDuplicates(catalog, { threshold: 0.6 });
+  assert.equal(d.length, 1);
+  assert.deepEqual([d[0].a, d[0].b].sort(), ['a:tdd', 'b:tdd-guide']);
+  assert.equal(d[0].sameName, false);
+  assert.deepEqual(findDuplicates({ plugins: [] }), []);
+  assert.deepEqual(findDuplicates({ plugins: [{ name: 'x', skills: [{ name: 's', description: '' }], commands: [], agents: [] }] }), []);
+});
+
+test('scanPlugins includes duplicates field; renderCatalogMd renders Duplicates section', () => {
+  const { pluginsFile, dir } = makeFixture();
+  const catalog = scanPlugins({ pluginsFile });
+  assert.deepEqual(catalog.duplicates, []);
+  const withDup = { ...catalog, duplicates: [{ a: 'a:tdd', b: 'b:tdd-guide', kind: 'skill', similarity: 0.6, sameName: false }] };
+  const md = renderCatalogMd(withDup);
+  assert.match(md, /## Duplicates/);
+  assert.match(md, /a:tdd ↔ b:tdd-guide/);
   rmSync(dir, { recursive: true, force: true });
 });
