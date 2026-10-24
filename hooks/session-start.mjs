@@ -34,5 +34,6 @@ export async function main() {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('session-start.mjs')) {
-  process.exit(await main());
+  await main();
+  process.exitCode = 0;
 }

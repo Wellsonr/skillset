@@ -14,8 +14,10 @@ export function doctorChecks({ catalog, installed, manifest, hasRules, srcVersio
     checks.push({ id: 'catalog', status: 'fail', detail: 'catalog.json tidak ada — jalankan /skillset:init' });
   } else {
     const ageDays = (now.getTime() - Date.parse(catalog.generatedAt)) / DAY_MS;
-    if (ageDays > 7) {
-      checks.push({ id: 'catalog', status: 'warn', detail: `catalog berumur ${Math.floor(ageDays)} hari — jalankan /skillset:scan` });
+    if (Number.isNaN(ageDays)) {
+      checks.push({ id: 'catalog', status: 'warn', detail: 'generatedAt tidak valid — jalankan /skillset:update untuk regenerasi' });
+    } else if (ageDays > 7) {
+      checks.push({ id: 'catalog', status: 'warn', detail: `catalog berumur ${Math.floor(ageDays)} hari — jalankan /skillset:update` });
     } else {
       checks.push({ id: 'catalog', status: 'ok', detail: 'catalog segar' });
     }
@@ -128,5 +130,5 @@ export async function main(argv) {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('doctor.mjs')) {
-  process.exit(await main(process.argv.slice(2)));
+  process.exitCode = await main(process.argv.slice(2));
 }
