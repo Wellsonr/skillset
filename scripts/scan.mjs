@@ -39,7 +39,45 @@ export function scanPlugins({ pluginsFile }) {
       agents: collectMdFiles(join(p.installPath, 'agents')),
     });
   }
-  return { generatedAt: new Date().toISOString(), plugins, skipped };
+  return { generatedAt: new Date().toISOString(), plugins, skipped, duplicates: findDuplicates({ plugins }) };
+}
+
+function tokens(s) {
+  return (s.toLowerCase().match(/[a-z0-9]+/g) || []);
+}
+
+function jaccard(a, b) {
+  let inter = 0;
+  for (const t of a) if (b.has(t)) inter++;
+  const union = a.size + b.size - inter;
+  return union === 0 ? 0 : inter / union;
+}
+
+export function findDuplicates(catalog, { threshold = 0.6 } = {}) {
+  const duplicates = [];
+  for (const [kind, label] of [['skills', 'skill'], ['commands', 'command'], ['agents', 'agent']]) {
+    const items = [];
+    for (const plugin of catalog.plugins) {
+      for (const item of plugin[kind] || []) items.push({ plugin: plugin.name, item });
+    }
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const x = items[i];
+        const y = items[j];
+        if (x.plugin === y.plugin) continue;
+        const sameName = x.item.name.toLowerCase() === y.item.name.toLowerCase();
+        const similarity = jaccard(
+          new Set(tokens(`${x.item.name} ${x.item.description}`)),
+          new Set(tokens(`${y.item.name} ${y.item.description}`)),
+        );
+        if (similarity >= threshold || sameName) {
+          const [a, b] = [`${x.plugin}:${x.item.name}`, `${y.plugin}:${y.item.name}`].sort();
+          duplicates.push({ a, b, kind: label, similarity, sameName });
+        }
+      }
+    }
+  }
+  return duplicates;
 }
 
 export function checkDrift(installed, catalog) {
@@ -68,6 +106,10 @@ export function renderCatalogMd(catalog) {
       for (const it of items) lines.push(`- **${it.name}** — ${it.description || '(no description)'}`);
       lines.push('');
     }
+  }
+  if (catalog.duplicates?.length) {
+    lines.push('## Duplicates', '', ...catalog.duplicates.map((d) =>
+      `- ${d.a} ↔ ${d.b} (similarity ${d.similarity}${d.sameName ? ', sameName' : ''})`), '');
   }
   if (catalog.skipped?.length) {
     lines.push('## Skipped (installPath hilang)', '', ...catalog.skipped.map((k) => `- ${k}`), '');
