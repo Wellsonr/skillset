@@ -1,35 +1,35 @@
 # skillset
 
-Plugin Claude Code: router satu pintu untuk skill semua plugin user-scope.
+Claude Code plugin: a single-entry router for skills across all your user-scope plugins.
 
-## Install (marketplace lokal)
+## Install (GitHub marketplace)
 
-    claude plugin marketplace add /config/workspace/ai/skillset
-    claude plugin install skillset@skillset-local
+    claude plugin marketplace add Wellsonr/skillset
+    claude plugin install skillset@skillset
 
-Restart sesi Claude Code setelah install/update.
+Restart your Claude Code session after installing or updating.
 
 ## Commands
 
-| Command | Fungsi |
+| Command | Purpose |
 |---|---|
-| `/skillset:init` | Bootstrap: manifest (semua plugin user-scope) → install yang kurang → update semua → generate katalog + rules awal |
-| `/skillset:update` | Update semua plugin manifest ke latest + regenerate katalog |
-| `/skillset:make <task>` | Router: ide → kode bekerja |
-| `/skillset:development <task>` | Router: full lifecycle sampai release |
-| `/skillset:plan <task>` | Router: produksi implementation plan |
-| `/skillset:execute <plan>` | Router: eksekusi plan existing |
-| `/skillset:review` | Router: review perubahan sesi terbaru |
-| `/skillset:rules` | Kelola rules custom (workflow-only) |
-| `/skillset:catalog` | Browse katalog skill |
+| `/skillset:init` | Bootstrap: manifest (all user-scope plugins) → install missing → update all → generate catalog + starter rules |
+| `/skillset:update` | Update all plugins to the latest version + regenerate the catalog |
+| `/skillset:make <task>` | Router: idea → working code |
+| `/skillset:development <task>` | Router: full lifecycle through release |
+| `/skillset:plan <task>` | Router: produce an implementation plan |
+| `/skillset:execute <plan>` | Router: execute an existing plan |
+| `/skillset:review` | Router: review the current session's changes |
+| `/skillset:rules` | Manage custom rules (workflow-only) |
+| `/skillset:catalog` | Browse the skill catalog |
 
 ## Data
 
-Runtime (bukan bagian repo): `~/.claude/skillset/data/` — `manifest.json`, `rules.md`, `catalog.json`, `catalog.md`.
+Runtime state (not part of the repo): `~/.claude/skillset/data/` — `manifest.json`, `rules.md`, `catalog.json`, `catalog.md`.
 
 ## Development
 
-    node --test tests/*.test.mjs   # unit test semua script
-    claude plugin validate /config/workspace/ai/skillset
+    node --test tests/*.test.mjs   # unit tests for all scripts
+    claude plugin validate .       # run from the repo root
 
 Spec: `docs/superpowers/specs/2026-10-22-skillset-plugin-design.md` · Plan: `docs/superpowers/plans/2026-10-22-skillset-plugin.md`
