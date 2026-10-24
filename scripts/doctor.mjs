@@ -17,7 +17,7 @@ export function doctorChecks({ catalog, installed, manifest, hasRules, srcVersio
     if (ageDays > 7) {
       checks.push({ id: 'catalog', status: 'warn', detail: `catalog berumur ${Math.floor(ageDays)} hari — jalankan /skillset:scan` });
     } else {
-      checks.push({ id: 'catalog', status: 'ok', detail: 'catalog fresh' });
+      checks.push({ id: 'catalog', status: 'ok', detail: 'catalog segar' });
     }
   }
 
