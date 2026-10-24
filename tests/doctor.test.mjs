@@ -50,11 +50,22 @@ test('doctor main: invalid catalog exits 2; healthy dir exits 0; --json prints c
   mkdirSync(dataDir, { recursive: true });
   writeFileSync(pluginsFile, JSON.stringify({ plugins: {} }));
   writeFileSync(join(dataDir, 'catalog.json'), '{invalid');
-  assert.equal(await main(['--data-dir', dataDir, '--plugins-file', pluginsFile]), 2);
-  writeFileSync(join(dataDir, 'catalog.json'), JSON.stringify({ generatedAt: new Date().toISOString(), plugins: [], duplicates: [] }));
-  writeFileSync(join(dataDir, 'manifest.json'), JSON.stringify({ autoUpdate: true, plugins: [] }));
-  writeFileSync(join(dataDir, 'rules.md'), '# rules\n');
-  assert.equal(await main(['--data-dir', dataDir, '--plugins-file', pluginsFile]), 0);
-  assert.equal(await main(['--data-dir', dataDir, '--plugins-file', pluginsFile, '--json']), 0);
+  const errs = [];
+  const logs = [];
+  const origError = console.error;
+  const origLog = console.log;
+  console.error = (msg) => errs.push(String(msg));
+  console.log = (msg) => logs.push(String(msg));
+  try {
+    assert.equal(await main(['--data-dir', dataDir, '--plugins-file', pluginsFile]), 2);
+    writeFileSync(join(dataDir, 'catalog.json'), JSON.stringify({ generatedAt: new Date().toISOString(), plugins: [], duplicates: [] }));
+    writeFileSync(join(dataDir, 'manifest.json'), JSON.stringify({ autoUpdate: true, plugins: [] }));
+    writeFileSync(join(dataDir, 'rules.md'), '# rules\n');
+    assert.equal(await main(['--data-dir', dataDir, '--plugins-file', pluginsFile]), 0);
+    assert.equal(await main(['--data-dir', dataDir, '--plugins-file', pluginsFile, '--json']), 0);
+  } finally {
+    console.error = origError;
+    console.log = origLog;
+  }
   rmSync(dir, { recursive: true, force: true });
 });
