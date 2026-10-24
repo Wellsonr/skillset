@@ -15,6 +15,7 @@ Restart your Claude Code session after installing or updating.
 |---|---|
 | `/skillset:init` | Bootstrap: manifest (all user-scope plugins) → install missing → update all → generate catalog + starter rules |
 | `/skillset:update` | Update all plugins to the latest version + regenerate the catalog |
+| `/skillset:doctor` | Consistency audit: catalog, drift, manifest, rules, duplicates |
 | `/skillset:make <task>` | Router: idea → working code |
 | `/skillset:development <task>` | Router: full lifecycle through release |
 | `/skillset:plan <task>` | Router: produce an implementation plan |

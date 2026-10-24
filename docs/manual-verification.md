@@ -27,6 +27,11 @@ Lakukan setelah install (restart sesi). Centang bila lulus.
 ## Drift
 - [ ] Jalankan `claude plugin update superpowers`, lalu `node scripts/scan.mjs --check` → exit 1 (drift terdeteksi); lalu jalankan `/skillset:update` (atau `node scripts/scan.mjs`) agar katalog segar kembali
 
+## Doctor & hook SessionStart
+- [ ] `node scripts/doctor.mjs` di data nyata → exit 0 atau 1 dengan tiap check terbaca (catalog/drift/manifest/rules/duplicates/skillset-src)
+- [ ] `node hooks/session-start.mjs` manual → keluar tanpa output saat katalog fresh
+- [ ] Ubah satu versi di `~/.claude/skillset/data/catalog.json` → `node hooks/session-start.mjs` mencetak 1 baris saran `/skillset:update`; kembalikan versi katalog seperti semula
+
 ## Clean-up fixture
 - [ ] Kembalikan fixture: `git checkout -- tests/fixtures/installed.json`
 - [ ] `rm -rf /tmp/skillset-smoke /tmp/skillset-smoke-bad /tmp/skillset-smoke-fail`
