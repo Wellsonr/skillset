@@ -1,9 +1,9 @@
-# Manual Verification — skillset v0.1.0
+# Manual Verification — skillset v0.2.0
 
 Lakukan setelah install (restart sesi). Centang bila lulus.
 
 ## Unit & struktur
-- [ ] `node --test tests/*.test.mjs` → semua PASS (lib, scan, sync, query)
+- [ ] `node --test tests/*.test.mjs` → semua PASS (lib, scan, sync, query, doctor, hook)
 - [ ] `claude plugin validate /config/workspace/ai/skillset` → lulus
 - [ ] `node scripts/scan.mjs --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → katalog tergenerate di /tmp/skillset-smoke
 - [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; ubah versi fixture → exit 1

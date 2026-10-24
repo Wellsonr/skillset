@@ -26,6 +26,17 @@ test('doctorChecks: stale catalog warns; future generatedAt stays ok', () => {
   assert.equal(future.find((c) => c.id === 'catalog').status, 'ok');
 });
 
+test('doctorChecks: NaN generatedAt warns instead of silent ok', () => {
+  const missing = doctorChecks({ ...okInputs(), catalog: { plugins: [], duplicates: [] } });
+  const missingCheck = missing.find((c) => c.id === 'catalog');
+  assert.equal(missingCheck.status, 'warn');
+  assert.match(missingCheck.detail, /generatedAt tidak valid/);
+  const garbage = doctorChecks({ ...okInputs(), catalog: { generatedAt: 'bukan-tanggal', plugins: [], duplicates: [] } });
+  const garbageCheck = garbage.find((c) => c.id === 'catalog');
+  assert.equal(garbageCheck.status, 'warn');
+  assert.match(garbageCheck.detail, /generatedAt tidak valid/);
+});
+
 test('doctorChecks: drift, manifest-missing-entry, no-rules, duplicates, src-mismatch warn', () => {
   const r = doctorChecks({
     catalog: { generatedAt: new Date().toISOString(), plugins: [{ name: 'a', marketplace: 'm', version: '1.0.0', skills: [], commands: [], agents: [] }], duplicates: [{ a: 'x:s', b: 'y:s', kind: 'skill', similarity: 1, sameName: true }] },

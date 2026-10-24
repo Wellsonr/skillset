@@ -109,7 +109,7 @@ export function renderCatalogMd(catalog) {
   }
   if (catalog.duplicates?.length) {
     lines.push('## Duplicates', '', ...catalog.duplicates.map((d) =>
-      `- ${d.a} ↔ ${d.b} (similarity ${d.similarity}${d.sameName ? ', sameName' : ''})`), '');
+      `- ${d.a} ↔ ${d.b} (similarity ${d.similarity.toFixed(2)}${d.sameName ? ', sameName' : ''})`), '');
   }
   if (catalog.skipped?.length) {
     lines.push('## Skipped (installPath hilang)', '', ...catalog.skipped.map((k) => `- ${k}`), '');

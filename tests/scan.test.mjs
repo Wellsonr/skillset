@@ -104,6 +104,16 @@ test('findDuplicates: same normalized name across plugins flagged; same-plugin i
   assert.deepEqual([d[0].a, d[0].b].sort(), ['a:Review', 'b:review']);
 });
 
+test('findDuplicates: same-plugin same-normalized-name ignored (skip is load-bearing)', () => {
+  const catalog = { plugins: [
+    { name: 'a', marketplace: 'm1', skills: [
+      { name: 'tdd', description: 'test driven development write tests first' },
+      { name: 'TDD', description: 'test driven development write the test first always' },
+    ], commands: [], agents: [] },
+  ]};
+  assert.deepEqual(findDuplicates(catalog), []);
+});
+
 test('findDuplicates: jaccard >= threshold flagged, dissimilar not, empty catalog -> []', () => {
   const catalog = { plugins: [
     { name: 'a', marketplace: 'm1', skills: [{ name: 'tdd', description: 'test driven development write tests first' }], commands: [], agents: [] },
