@@ -1,0 +1,46 @@
+{
+  "unit": "bytes",
+  "estimatedTokens": "bytes / 4",
+  "catalogBytes": 259406,
+  "routing": {
+    "command": 846,
+    "router": 3538,
+    "query": 768,
+    "rules": 969
+  },
+  "routingBytes": 6121,
+  "queries": [
+    {
+      "keywords": "readme docs github",
+      "lean": 765,
+      "full": 3730
+    },
+    {
+      "keywords": "react vite tailwind",
+      "lean": 786,
+      "full": 3710
+    },
+    {
+      "keywords": "test debug refactor",
+      "lean": 753,
+      "full": 2986
+    }
+  ],
+  "chains": {
+    "small": {
+      "skills": 3,
+      "bytes": 14020,
+      "missing": []
+    },
+    "medium": {
+      "skills": 6,
+      "bytes": 41098,
+      "missing": []
+    },
+    "full": {
+      "skills": 11,
+      "bytes": 67848,
+      "missing": []
+    }
+  }
+}

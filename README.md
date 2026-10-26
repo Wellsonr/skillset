@@ -8,7 +8,7 @@ Describe what you want to do. skillset picks the right chain of skills across yo
 
 ![version](https://img.shields.io/badge/version-0.3.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
-![tests](https://img.shields.io/badge/tests-52%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-55%20passing-brightgreen)
 ![dependencies](https://img.shields.io/badge/dependencies-zero-lightgrey)
 ![claude code](https://img.shields.io/badge/Claude%20Code-plugin-d97757)
 
@@ -108,13 +108,31 @@ Rules live in `~/.claude/skillset/data/rules.md` and apply **only inside skillse
 
 The starter file created by `/skillset:init` includes an always-on section that applies to every workflow. Any other section activates only when its trigger matches your task. View and edit all of them with `/skillset:rules`.
 
+## Why it works
+
+The idea is simple: **never put the whole catalog in context, and never run a longer chain than the task needs.** These charts come from real files on a machine with 25 plugins and 470 skills, and you can regenerate them with `node scripts/bench.mjs`.
+
+![What one routing step loads](docs/assets/bench-catalog.svg)
+
+A routing step reads about 1,500 tokens (the command, the router, a 5-row query and your rules) instead of the 65,000-token catalog, so the catalog can keep growing without slowing routing down.
+
+![Skill text loaded by a chain](docs/assets/bench-chain.svg)
+
+Most of the cost is the skills a chain loads. A small task runs 3 skills (about 3,500 tokens) instead of the full 11 (about 17,000), which is **79% less**. A medium task is **39% less**.
+
+![Catalog query output before and after](docs/assets/bench-query.svg)
+
+Catalog queries now return 5 short rows instead of 12 long ones, **75–79% less** on the three sample queries.
+
+**Method and limits.** Tokens are estimated as bytes / 4, so read the ratios, not the absolute numbers. The charts measure skill text loaded, not total session cost, and they do not include the savings from running mechanical phases on cheaper models, which depend on your workload and which I have not measured. Cheaper chains are only safe when the task really is small, so the router shows the detected size in every proposal and you can force the full chain with `--full`.
+
 ## Saving tokens
 
-skillset is built to be cheap to run. Routing itself costs roughly 2,000 tokens, and the full catalog is never loaded. Most of the real cost is the skills a chain loads and the model that runs them, so the router trims both:
+skillset is built to be cheap to run. Routing itself costs roughly 1,500 tokens, and the full catalog is never loaded. Most of the real cost is the skills a chain loads and the model that runs them, so the router trims both:
 
-- **Task sizing.** `make` and `development` size the task first. A small change runs just TDD, verification and commit (about 14 KB of skill text) instead of the full lifecycle (about 50 KB), roughly 70% less. Tasks touching auth, payments, DB migrations or secrets are never sized below medium. Add `--full` to the task to force the whole chain.
+- **Task sizing.** `make` and `development` size the task first. A small change runs just TDD, verification and commit (about 3,500 tokens of skill text) instead of the full 11-skill lifecycle (about 17,000), roughly 79% less. Tasks touching auth, payments, DB migrations or secrets are never sized below medium. Add `--full` to the task to force the whole chain.
 - **Cheaper models for mechanical phases.** Verification, commits and finishing a branch run in Haiku subagents, and implementation and reviews in Sonnet subagents. Skills that need your input always stay in your session model. Override any phase in the `## models` section of `~/.claude/skillset/data/rules.md` (`haiku`, `sonnet`, `opus` or `main`).
-- **Lean catalog queries.** `query` returns the top 5 matches with short descriptions, about 80% less output. Use `--full` for the old behavior.
+- **Lean catalog queries.** `query` returns the top 5 matches with short descriptions, about 75–80% less output. Use `--full` for the old behavior.
 - **Fewer plugins, smaller prompt.** Every installed plugin lists its skills in each session's system prompt. Disable plugins you no longer use to cut that fixed cost.
 
 The proposal always shows the detected size, the model per phase, and which steps were trimmed, and nothing runs until you confirm.
@@ -143,9 +161,12 @@ Edit `~/.claude/skillset/data/manifest.json`, then run `/skillset:update`.
 ## Development
 
 ```bash
-node --test tests/*.test.mjs   # 52 unit tests, no install step needed
+node --test tests/*.test.mjs   # 55 unit tests, no install step needed
 claude plugin validate .       # run from the repo root
+node scripts/bench.mjs         # regenerate the charts in docs/assets from your own catalog
 ```
+
+`bench.mjs` needs `/skillset:init` to have run, and the `superpowers`, `mattpocock-skills` and `commit-commands` plugins installed, because the chains it measures use their skills.
 
 Layout:
 
