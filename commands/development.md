@@ -1,7 +1,7 @@
 ---
 description: Router — full lifecycle from idea to release (plan → implement → test → review → PR → deploy).
 argument-hint: "[task]"
-allowed-tools: Bash, Read, Skill, AskUserQuestion
+allowed-tools: Bash, Read, Skill, Agent, AskUserQuestion
 ---
 
 User task: $ARGUMENTS

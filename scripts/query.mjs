@@ -24,13 +24,16 @@ export function scoreEntries(catalog, keywords) {
   return rows.sort((a, b) => b.score - a.score);
 }
 
-export function formatResults(rows) {
+const LEAN_DESC_MAX = 120;
+const lean = (text) => (text.length > LEAN_DESC_MAX ? text.slice(0, LEAN_DESC_MAX - 1).trimEnd() + '…' : text);
+
+export function formatResults(rows, { full = false } = {}) {
   const out = [];
   for (const kind of ['skill', 'command', 'agent']) {
     const items = rows.filter((r) => r.kind === kind);
     if (!items.length) continue;
     out.push(`## ${kind}s`, '');
-    for (const r of items) out.push(`- ${r.plugin}:${r.name} — ${r.description}`);
+    for (const r of items) out.push(`- ${r.plugin}:${r.name} — ${full ? r.description : lean(r.description)}`);
     out.push('');
   }
   return out.join('\n');
@@ -63,10 +66,11 @@ export function main(argv) {
     console.log(summarize(catalog));
     return 0;
   }
-  const top = Number(flags.top || 12);
+  const full = Boolean(flags.full);
+  const top = Number(flags.top || (full ? 12 : 5));
   const rows = scoreEntries(catalog, positional).slice(0, top);
   if (flags.json) console.log(JSON.stringify(rows, null, 2));
-  else console.log(rows.length ? formatResults(rows) : 'No results for that keyword.');
+  else console.log(rows.length ? formatResults(rows, { full }) : 'No results for that keyword.');
   return 0;
 }
 

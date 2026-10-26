@@ -1,7 +1,7 @@
 ---
 description: Router — build something from an idea into working code (propose a cross-plugin skill chain → confirm → execute).
 argument-hint: "[task]"
-allowed-tools: Bash, Read, Skill, AskUserQuestion
+allowed-tools: Bash, Read, Skill, Agent, AskUserQuestion
 ---
 
 User task: $ARGUMENTS

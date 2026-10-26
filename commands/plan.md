@@ -1,7 +1,7 @@
 ---
 description: Router — produce an implementation plan only (research → design → plan; no implementation).
 argument-hint: "[task]"
-allowed-tools: Bash, Read, Skill, AskUserQuestion
+allowed-tools: Bash, Read, Skill, Agent, AskUserQuestion
 ---
 
 User task: $ARGUMENTS

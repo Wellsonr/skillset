@@ -34,3 +34,37 @@ test('drops zero-score entries', () => {
 test('summarize lists per-plugin counts', () => {
   assert.match(summarize(catalog), /superpowers \(off, 6\.4\.1\) — 2 skills, 0 commands, 0 agents/);
 });
+
+test('formatResults truncates long descriptions to the lean limit by default', () => {
+  const long = 'x'.repeat(300);
+  const rows = [{ kind: 'skill', plugin: 'p', name: 'n', description: long, score: 1 }];
+  const out = formatResults(rows);
+  assert.ok(out.includes('x'.repeat(119) + '…'));
+  assert.ok(!out.includes('x'.repeat(121)));
+});
+
+test('formatResults keeps full descriptions with { full: true }', () => {
+  const long = 'x'.repeat(300);
+  const out = formatResults([{ kind: 'skill', plugin: 'p', name: 'n', description: long, score: 1 }], { full: true });
+  assert.ok(out.includes(long));
+});
+
+test('main defaults to top 5 and --full restores top 12', async () => {
+  const { mkdtempSync, writeFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { main } = await import('../scripts/query.mjs');
+  const dir = mkdtempSync(join(tmpdir(), 'skillset-q-'));
+  const skills = Array.from({ length: 20 }, (_, i) => ({ name: `s${i}`, description: 'alpha ' + 'd'.repeat(200) }));
+  writeFileSync(join(dir, 'catalog.json'), JSON.stringify({ plugins: [{ name: 'p', skills, commands: [], agents: [] }] }));
+  const run = (args) => {
+    const lines = [];
+    const orig = console.log;
+    console.log = (s) => lines.push(String(s));
+    try { main(['alpha', '--data-dir', dir, '--json', ...args]); } finally { console.log = orig; }
+    return JSON.parse(lines.join('\n'));
+  };
+  assert.equal(run([]).length, 5);
+  assert.equal(run(['--full']).length, 12);
+  assert.equal(run(['--top', '3']).length, 3);
+});

@@ -12,3 +12,14 @@ The rules below apply only inside skillset workflow commands (`/skillset:make|de
 <!-- trigger: task builds a new web frontend -->
 - Always include a service worker (PWA-ready)
 - Login forms: support Tab navigation + submit via Enter
+
+## models
+<!-- per-phase model for delegation: haiku | sonnet | opus | main (main = stay in the session model) -->
+- verification-before-completion: haiku
+- finishing-a-development-branch: haiku
+- commit-push-pr: haiku
+- test-driven-development: sonnet
+- code-review: sonnet
+- requesting-code-review: sonnet
+- brainstorming: main
+- writing-plans: main

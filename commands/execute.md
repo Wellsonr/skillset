@@ -1,7 +1,7 @@
 ---
 description: Router — execute an existing implementation plan (pick the execution mode by plan size).
 argument-hint: "[path-to-plan.md]"
-allowed-tools: Bash, Read, Skill, AskUserQuestion
+allowed-tools: Bash, Read, Skill, Agent, AskUserQuestion
 ---
 
 User plan: $ARGUMENTS

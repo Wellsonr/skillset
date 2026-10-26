@@ -6,9 +6,9 @@
 
 Describe what you want to do. skillset picks the right chain of skills across your plugins, shows you the plan, and runs it once you approve.
 
-![version](https://img.shields.io/badge/version-0.2.1-blue)
+![version](https://img.shields.io/badge/version-0.3.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
-![tests](https://img.shields.io/badge/tests-49%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-52%20passing-brightgreen)
 ![dependencies](https://img.shields.io/badge/dependencies-zero-lightgrey)
 ![claude code](https://img.shields.io/badge/Claude%20Code-plugin-d97757)
 
@@ -64,7 +64,7 @@ flowchart LR
 ```
 
 1. **Pre-flight.** A read-only check compares the catalog with what is installed. If plugins were added, removed or updated, skillset offers `/skillset:update`.
-2. **Selective load.** The router queries the catalog by keyword. It never loads the full catalog into context, which keeps token cost low.
+2. **Selective load.** The router queries the catalog by keyword (top 5, short descriptions). It never loads the full catalog into context, which keeps token cost low.
 3. **Propose.** You get a table of skill, role and reason, plus the rules that apply. If a skill is missing it substitutes an equivalent, for example `superpowers:test-driven-development` for `mattpocock-skills:tdd`.
 4. **Confirm, then execute.** The chain runs through each skill's own gates, and approval steps are never bypassed.
 
@@ -108,6 +108,17 @@ Rules live in `~/.claude/skillset/data/rules.md` and apply **only inside skillse
 
 The starter file created by `/skillset:init` includes an always-on section that applies to every workflow. Any other section activates only when its trigger matches your task. View and edit all of them with `/skillset:rules`.
 
+## Saving tokens
+
+skillset is built to be cheap to run. Routing itself costs roughly 2,000 tokens, and the full catalog is never loaded. Most of the real cost is the skills a chain loads and the model that runs them, so the router trims both:
+
+- **Task sizing.** `make` and `development` size the task first. A small change runs just TDD, verification and commit (about 14 KB of skill text) instead of the full lifecycle (about 50 KB), roughly 70% less. Tasks touching auth, payments, DB migrations or secrets are never sized below medium. Add `--full` to the task to force the whole chain.
+- **Cheaper models for mechanical phases.** Verification, commits and finishing a branch run in Haiku subagents, and implementation and reviews in Sonnet subagents. Skills that need your input always stay in your session model. Override any phase in the `## models` section of `~/.claude/skillset/data/rules.md` (`haiku`, `sonnet`, `opus` or `main`).
+- **Lean catalog queries.** `query` returns the top 5 matches with short descriptions, about 80% less output. Use `--full` for the old behavior.
+- **Fewer plugins, smaller prompt.** Every installed plugin lists its skills in each session's system prompt. Disable plugins you no longer use to cut that fixed cost.
+
+The proposal always shows the detected size, the model per phase, and which steps were trimmed, and nothing runs until you confirm.
+
 ## Stays out of your way
 
 - **Read-only hook.** A `SessionStart` hook checks for drift and prints at most one line. It never changes anything and always exits 0, so it cannot break your session.
@@ -132,7 +143,7 @@ Edit `~/.claude/skillset/data/manifest.json`, then run `/skillset:update`.
 ## Development
 
 ```bash
-node --test tests/*.test.mjs   # 49 unit tests, no install step needed
+node --test tests/*.test.mjs   # 52 unit tests, no install step needed
 claude plugin validate .       # run from the repo root
 ```
 

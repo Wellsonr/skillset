@@ -32,6 +32,14 @@ Perform after installation (restart the session). Check off when passing.
 - [ ] `node hooks/session-start.mjs` run manually → exits with no output when the catalog is fresh
 - [ ] Change one version in `~/.claude/skillset/data/catalog.json` → `node hooks/session-start.mjs` prints 1 line suggesting `/skillset:update`; restore the catalog version as it was
 
+## Token-saving mode
+- [ ] `/skillset:make fix a typo in the README title` → sized **small**; proposal shows ≤3 skills with a model column and the trimmed steps; nothing runs before confirmation
+- [ ] `/skillset:make add a login endpoint with JWT` → sized at least **medium** (auth is never below medium)
+- [ ] `/skillset:make --full add a CSV export button` → `--full` stripped from the task; the full archetype chain is proposed
+- [ ] Approve a chain with `verification-before-completion: haiku` → it runs in a Haiku subagent; `brainstorming` stays in the session model
+- [ ] Remove the `## models` section from `rules.md` → router falls back to the built-in defaults; a legacy `## selalu` section is still honored as `always`
+- [ ] `node scripts/query.mjs react vite` prints ≤5 short entries; `--full` restores up to 12 full descriptions
+
 ## Clean-up fixtures
 - [ ] Restore the fixture: `git checkout -- tests/fixtures/installed.json`
 - [ ] `rm -rf /tmp/skillset-smoke /tmp/skillset-smoke-bad /tmp/skillset-smoke-fail`

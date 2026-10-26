@@ -1,9 +1,9 @@
 {
-  "name": "skillset-local",
+  "name": "skillset",
   "owner": { "name": "Wellson" },
   "metadata": {
     "description": "Marketplace for the skillset plugin",
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
   "plugins": [
     {
