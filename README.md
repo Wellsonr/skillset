@@ -101,15 +101,12 @@ brainstorming → codebase-design / domain-modeling → writing-plans
 Rules live in `~/.claude/skillset/data/rules.md` and apply **only inside skillset workflows**, never in your regular Claude Code sessions.
 
 ```markdown
-## selalu
-- Update the docs after every milestone
-
 ## web-project
 <!-- trigger: task builds a new web frontend -->
 - Ship a service worker (PWA-ready)
 ```
 
-The `selalu` ("always") section is active in every workflow. Other sections activate when their trigger matches your task. Manage them with `/skillset:rules`.
+The starter file created by `/skillset:init` includes an always-on section that applies to every workflow. Any other section activates only when its trigger matches your task. View and edit all of them with `/skillset:rules`.
 
 ## Stays out of your way
 
@@ -150,8 +147,6 @@ templates/    starter rules file
 tests/        node:test suites and fixtures
 docs/         design spec, plans, manual verification checklist
 ```
-
-Design spec: [`docs/superpowers/specs/2026-10-22-skillset-plugin-design.md`](docs/superpowers/specs/2026-10-22-skillset-plugin-design.md) · Manual checks: [`docs/manual-verification.md`](docs/manual-verification.md)
 
 ## Contributing
 
