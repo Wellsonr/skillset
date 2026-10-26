@@ -1,37 +1,37 @@
 # Manual Verification — skillset v0.2.0
 
-Lakukan setelah install (restart sesi). Centang bila lulus.
+Perform after installation (restart the session). Check off when passing.
 
-## Unit & struktur
-- [ ] `node --test tests/*.test.mjs` → semua PASS (lib, scan, sync, query, doctor, hook)
-- [ ] `claude plugin validate /config/workspace/ai/skillset` → lulus
-- [ ] `node scripts/scan.mjs --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → katalog tergenerate di /tmp/skillset-smoke
-- [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; ubah versi fixture → exit 1
-- [ ] (setelah `/skillset:init`) `node scripts/sync.mjs --dry-run` → exit 0, `dryRunCommands` tercetak, tanpa spawn nyata
-- [ ] `mkdir -p /tmp/skillset-smoke-bad && printf '{bad' > /tmp/skillset-smoke-bad/manifest.json && node scripts/sync.mjs --data-dir /tmp/skillset-smoke-bad` → exit 2, pesan berisi `manifest.json tidak valid` (bukan `sync gagal`) — dir terpisah agar cek lain tetap idempoten
-- [ ] `mkdir -p /tmp/skillset-smoke-fail && printf '{"autoUpdate":true,"plugins":["nonexistent-plugin@nowhere"]}' > /tmp/skillset-smoke-fail/manifest.json && node scripts/sync.mjs --data-dir /tmp/skillset-smoke-fail --plugins-file tests/fixtures/installed.json` → **exit 0** walaupun `failed` berisi entri (non-blocking terverifikasi)
+## Unit & structure
+- [ ] `node --test tests/*.test.mjs` → all PASS (lib, scan, sync, query, doctor, hook)
+- [ ] `claude plugin validate /config/workspace/ai/skillset` → passes
+- [ ] `node scripts/scan.mjs --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → catalog generated in /tmp/skillset-smoke
+- [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; change a fixture version → exit 1
+- [ ] (after `/skillset:init`) `node scripts/sync.mjs --dry-run` → exit 0, `dryRunCommands` printed, no real spawns
+- [ ] `mkdir -p /tmp/skillset-smoke-bad && printf '{bad' > /tmp/skillset-smoke-bad/manifest.json && node scripts/sync.mjs --data-dir /tmp/skillset-smoke-bad` → exit 2, message contains `manifest.json is invalid` (not `sync failed`) — separate dir so the other checks stay idempotent
+- [ ] `mkdir -p /tmp/skillset-smoke-fail && printf '{"autoUpdate":true,"plugins":["nonexistent-plugin@nowhere"]}' > /tmp/skillset-smoke-fail/manifest.json && node scripts/sync.mjs --data-dir /tmp/skillset-smoke-fail --plugins-file tests/fixtures/installed.json` → **exit 0** even though `failed` contains an entry (non-blocking verified)
 
-## /skillset:init (end-to-end, menyentuh home asli — memang tujuan plugin)
-- [ ] `/skillset:init` → manifest tergenerate berisi plugin user-scope saat ini; `~/.claude/skillset/data/catalog.md` ada dan memuat superpowers dkk.
-- [ ] Plugin gagal update (bila ada) dilaporkan, workflow tetap selesai
-- [ ] `rules.md` terbentuk dari template; jalankan ulang `/skillset:init` → rules TIDAK tertimpa
+## /skillset:init (end-to-end, touches the real home directory — this is the plugin's purpose)
+- [ ] `/skillset:init` → manifest generated containing the current user-scope plugins; `~/.claude/skillset/data/catalog.md` exists and includes superpowers and others
+- [ ] A plugin that fails to update (if any) is reported, and the workflow still completes
+- [ ] `rules.md` is created from the template; re-run `/skillset:init` → rules are NOT overwritten
 
 ## /skillset:catalog & query
-- [ ] `/skillset:catalog` → ringkasan per plugin
-- [ ] `/skillset:catalog tdd` → hasil query ber-prefix plugin
+- [ ] `/skillset:catalog` → summary per plugin
+- [ ] `/skillset:catalog tdd` → query results with plugin prefix
 
 ## Router
-- [ ] `/skillset:make tambah tombol export CSV di dashboard` → pre-flight jalan; usulan rantai tampil (brainstorming…verification); TIDAK eksekusi apa pun sebelum konfirmasi
-- [ ] Task trivial (pertanyaan kecil nyata) → router menjawab langsung tanpa rantai
+- [ ] `/skillset:make add CSV export button to the dashboard` → pre-flight runs; the proposed chain is shown (brainstorming…verification); NO execution before confirmation
+- [ ] Trivial task (a real small question) → router answers directly without a chain
 
 ## Drift
-- [ ] Jalankan `claude plugin update superpowers`, lalu `node scripts/scan.mjs --check` → exit 1 (drift terdeteksi); lalu jalankan `/skillset:update` (atau `node scripts/scan.mjs`) agar katalog segar kembali
+- [ ] Run `claude plugin update superpowers`, then `node scripts/scan.mjs --check` → exit 1 (drift detected); then run `/skillset:update` (or `node scripts/scan.mjs`) so the catalog is fresh again
 
-## Doctor & hook SessionStart
-- [ ] `node scripts/doctor.mjs` di data nyata → exit 0 atau 1 dengan tiap check terbaca (catalog/drift/manifest/rules/duplicates/skillset-src)
-- [ ] `node hooks/session-start.mjs` manual → keluar tanpa output saat katalog fresh
-- [ ] Ubah satu versi di `~/.claude/skillset/data/catalog.json` → `node hooks/session-start.mjs` mencetak 1 baris saran `/skillset:update`; kembalikan versi katalog seperti semula
+## Doctor & SessionStart hook
+- [ ] `node scripts/doctor.mjs` on real data → exit 0 or 1 with each check readable (catalog/drift/manifest/rules/duplicates/skillset-src)
+- [ ] `node hooks/session-start.mjs` run manually → exits with no output when the catalog is fresh
+- [ ] Change one version in `~/.claude/skillset/data/catalog.json` → `node hooks/session-start.mjs` prints 1 line suggesting `/skillset:update`; restore the catalog version as it was
 
-## Clean-up fixture
-- [ ] Kembalikan fixture: `git checkout -- tests/fixtures/installed.json`
+## Clean-up fixtures
+- [ ] Restore the fixture: `git checkout -- tests/fixtures/installed.json`
 - [ ] `rm -rf /tmp/skillset-smoke /tmp/skillset-smoke-bad /tmp/skillset-smoke-fail`

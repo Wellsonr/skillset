@@ -11,13 +11,13 @@ export function doctorChecks({ catalog, installed, manifest, hasRules, srcVersio
   const checks = [];
 
   if (catalog == null) {
-    checks.push({ id: 'catalog', status: 'fail', detail: 'catalog.json tidak ada — jalankan /skillset:init' });
+    checks.push({ id: 'catalog', status: 'fail', detail: 'catalog.json not found — run /skillset:init' });
   } else {
     const ageDays = (now.getTime() - Date.parse(catalog.generatedAt)) / DAY_MS;
     if (Number.isNaN(ageDays)) {
-      checks.push({ id: 'catalog', status: 'warn', detail: 'generatedAt tidak valid — jalankan /skillset:update untuk regenerasi' });
+      checks.push({ id: 'catalog', status: 'warn', detail: 'generatedAt is invalid — run /skillset:update to regenerate' });
     } else if (ageDays > 7) {
-      checks.push({ id: 'catalog', status: 'warn', detail: `catalog berumur ${Math.floor(ageDays)} hari — jalankan /skillset:update` });
+      checks.push({ id: 'catalog', status: 'warn', detail: `catalog is ${Math.floor(ageDays)} day(s) old — run /skillset:update` });
     } else {
       checks.push({ id: 'catalog', status: 'ok', detail: 'catalog segar' });
     }
@@ -26,44 +26,44 @@ export function doctorChecks({ catalog, installed, manifest, hasRules, srcVersio
   if (catalog != null) {
     const { fresh, changes } = checkDrift(installed, catalog);
     if (!fresh) {
-      checks.push({ id: 'drift', status: 'warn', detail: `${changes.length} perubahan — jalankan /skillset:update` });
+      checks.push({ id: 'drift', status: 'warn', detail: `${changes.length} change(s) — run /skillset:update` });
     } else {
       checks.push({ id: 'drift', status: 'ok', detail: 'catalog sesuai instalasi' });
     }
   }
 
   if (manifest == null) {
-    checks.push({ id: 'manifest', status: 'warn', detail: 'manifest.json tidak ada — node sync.mjs --generate-manifest' });
+    checks.push({ id: 'manifest', status: 'warn', detail: 'manifest.json not found — node sync.mjs --generate-manifest' });
   } else {
     const { missing } = diffManifest(manifest, installed);
     if (missing.length > 0) {
-      checks.push({ id: 'manifest', status: 'warn', detail: `${missing.length} plugin di manifest belum terpasang` });
+      checks.push({ id: 'manifest', status: 'warn', detail: `${missing.length} manifest plugin(s) not installed` });
     } else {
       checks.push({ id: 'manifest', status: 'ok', detail: 'manifest sesuai instalasi' });
     }
   }
 
   if (!hasRules) {
-    checks.push({ id: 'rules', status: 'warn', detail: 'rules.md tidak ada — jalankan /skillset:init' });
+    checks.push({ id: 'rules', status: 'warn', detail: 'rules.md not found — run /skillset:init' });
   } else {
     checks.push({ id: 'rules', status: 'ok', detail: 'rules.md ada' });
   }
 
   const dupCount = catalog?.duplicates?.length ?? 0;
   if (dupCount > 0) {
-    checks.push({ id: 'duplicates', status: 'warn', detail: `${dupCount} pasangan duplikat (lihat catalog.md)` });
+    checks.push({ id: 'duplicates', status: 'warn', detail: `${dupCount} duplicate pair(s) (see catalog.md)` });
   } else {
-    checks.push({ id: 'duplicates', status: 'ok', detail: 'tidak ada duplikat' });
+    checks.push({ id: 'duplicates', status: 'ok', detail: 'no duplicates' });
   }
 
   if (srcVersion && installedVersion) {
     if (srcVersion !== installedVersion) {
-      checks.push({ id: 'skillset-src', status: 'warn', detail: `source v${srcVersion} ≠ terpasang v${installedVersion} — bump versi & publish, atau reinstall` });
+      checks.push({ id: 'skillset-src', status: 'warn', detail: `source v${srcVersion} ≠ installed v${installedVersion} — bump the version & publish, or reinstall` });
     } else {
-      checks.push({ id: 'skillset-src', status: 'ok', detail: `source v${srcVersion} = terpasang v${installedVersion}` });
+      checks.push({ id: 'skillset-src', status: 'ok', detail: `source v${srcVersion} = installed v${installedVersion}` });
     }
   } else {
-    checks.push({ id: 'skillset-src', status: 'ok', detail: 'versi source tidak diperiksa' });
+    checks.push({ id: 'skillset-src', status: 'ok', detail: 'source version not checked' });
   }
 
   return checks;
@@ -82,7 +82,7 @@ export async function main(argv) {
     try {
       catalog = readJson(catalogFile);
     } catch (err) {
-      console.error(`${catalogFile} tidak valid: ${err.message}`);
+      console.error(`${catalogFile} is invalid: ${err.message}`);
       return 2;
     }
   }
@@ -91,7 +91,7 @@ export async function main(argv) {
   try {
     installed = readInstalledUserPlugins(pluginsFile);
   } catch (err) {
-    console.error(`${pluginsFile} tidak valid: ${err.message}`);
+    console.error(`${pluginsFile} is invalid: ${err.message}`);
     return 2;
   }
 
@@ -100,7 +100,7 @@ export async function main(argv) {
     try {
       manifest = readJson(manifestFile);
     } catch (err) {
-      console.error(`${manifestFile} tidak valid: ${err.message}`);
+      console.error(`${manifestFile} is invalid: ${err.message}`);
       return 2;
     }
   }

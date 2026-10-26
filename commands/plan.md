@@ -1,14 +1,14 @@
 ---
-description: Router — produksi implementation plan saja (riset → desain → plan; tanpa implementasi).
+description: Router — produce an implementation plan only (research → design → plan; no implementation).
 argument-hint: "[task]"
 allowed-tools: Bash, Read, Skill, AskUserQuestion
 ---
 
-Task user: $ARGUMENTS
+User task: $ARGUMENTS
 
-Baca `${CLAUDE_PLUGIN_ROOT}/skills/router/SKILL.md` dengan tool Read, lalu ikuti prosedur router di sana dengan:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/router/SKILL.md` with the Read tool, then follow the router procedure there with:
 
-- **Archetype plan** (deliverable = dokumen plan, BERHENTI di plan — jangan implementasi):
-  1. `mattpocock-skills:research` — bila perlu riset lib/pola
-  2. `superpowers:brainstorming` — bila belum ada spec/disain (sampai spec disetujui user)
+- **Archetype plan** (the deliverable is a plan document; STOP at the plan — do not implement):
+  1. `mattpocock-skills:research` — when library/pattern research is needed
+  2. `superpowers:brainstorming` — when no spec/design exists yet (until the user approves the spec)
   3. `superpowers:writing-plans`

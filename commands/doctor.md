@@ -1,13 +1,13 @@
 ---
-description: Audit konsistensi skillset (katalog, drift, manifest, rules, duplikat) — report-only.
+description: Consistency audit of skillset (catalog, drift, manifest, rules, duplicates) — report-only.
 allowed-tools: Bash
 ---
 
-Argumen `$ARGUMENTS` = flag opsional (mis. `--skillset-src <dir>`).
+`$ARGUMENTS` = optional flags (e.g. `--skillset-src <dir>`).
 
-- Bila ADA argumen: `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs" $ARGUMENTS`
-- Bila KOSONG: `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs"`
+- With arguments: `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs" $ARGUMENTS`
+- Without: `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs"`
 
-Jalankan lewat Bash, sampaikan output penting apa adanya, lalu ringkas:
+Run it via Bash, relay the important output as-is, then summarize.
 
-Ringkasan wajib: tiap check berstatus `warn`/`fail` beserta saran perbaikannya (sudah tercantum di detail tiap baris), lalu status akhir (exit 0 = semua ok, 1 = ada warn/fail, 2 = file data tidak valid). Ingatkan: doctor hanya melapor, tidak mengubah apa pun — tindak lanjut (mis. `/skillset:init`, `/skillset:update`) usulkan dulu, jangan eksekusi tanpa konfirmasi.
+Required summary: every check with status `warn`/`fail` together with its suggested fix (already listed in each row's detail), then the final status (exit 0 = all ok, 1 = warn/fail present, 2 = invalid data file). Remind the user: doctor only reports and changes nothing — propose follow-ups (e.g. `/skillset:init`, `/skillset:update`) first and do not run them without confirmation.

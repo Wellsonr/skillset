@@ -1,11 +1,11 @@
 ---
-description: Update semua plugin manifest ke latest + regenerate katalog skillset.
+description: Update all manifest plugins to latest + regenerate the skillset catalog.
 allowed-tools: Bash
 ---
 
-Jalankan lewat Bash, sampaikan output penting apa adanya, lalu ringkas:
+Run via Bash, relay the important output as-is, then summarize:
 
 1. `node "${CLAUDE_PLUGIN_ROOT}/scripts/sync.mjs"`
 2. `node "${CLAUDE_PLUGIN_ROOT}/scripts/scan.mjs"`
 
-Ringkasan wajib: ter-update, gagal (+error), jumlah entri katalog baru, skipped. Ingatkan: restart sesi bila ada plugin ter-update agar versi baru aktif.
+Required summary: updated, failed (+ error), number of new catalog entries, skipped. Remind the user: restart the session if any plugin was updated so the new version takes effect.

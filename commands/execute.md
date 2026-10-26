@@ -1,15 +1,15 @@
 ---
-description: Router — eksekusi implementation plan yang sudah ada (pilih mode eksekusi sesuai ukuran plan).
-argument-hint: "[path-ke-plan.md]"
+description: Router — execute an existing implementation plan (pick the execution mode by plan size).
+argument-hint: "[path-to-plan.md]"
 allowed-tools: Bash, Read, Skill, AskUserQuestion
 ---
 
-Plan user: $ARGUMENTS
+User plan: $ARGUMENTS
 
-Baca `${CLAUDE_PLUGIN_ROOT}/skills/router/SKILL.md` dengan tool Read, lalu ikuti prosedur router di sana dengan:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/router/SKILL.md` with the Read tool, then follow the router procedure there with:
 
-- **Archetype execute** (baca plan di path tersebut dulu, laporkan jumlah task-nya):
-  1. Deteksi ukuran: plan kecil (≤ ~8 task) → `superpowers:executing-plans`; plan besar/paralelisabel → `superpowers:subagent-driven-development`
-  2. Selama implementasi: `superpowers:test-driven-development` ⇄ `mattpocock-skills:tdd`
-  3. Review antar-task (bila subagent-driven): `pr-review-toolkit:code-reviewer` ⇄ `ecc:code-reviewer`
-  4. Penutup: `superpowers:verification-before-completion` + laporan hasil per task
+- **Archetype execute** (read the plan at that path first and report its task count):
+  1. Detect size: small plan (≤ ~8 tasks) → `superpowers:executing-plans`; large or parallelizable plan → `superpowers:subagent-driven-development`
+  2. During implementation: `superpowers:test-driven-development` ⇄ `mattpocock-skills:tdd`
+  3. Per-task review (when subagent-driven): `pr-review-toolkit:code-reviewer` ⇄ `ecc:code-reviewer`
+  4. Wrap-up: `superpowers:verification-before-completion` + a per-task result report

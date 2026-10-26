@@ -9,15 +9,15 @@ export function sessionStartCheck({ pluginsFile = defaultPaths().pluginsFile, da
     const installed = readInstalledUserPlugins(pluginsFile);
     const catalogFile = join(dataDir, 'catalog.json');
     if (!existsSync(catalogFile)) {
-      return { message: 'skillset: catalog.json belum ada — jalankan /skillset:init untuk membuat katalog.' };
+      return { message: 'skillset: catalog.json not found — run /skillset:init to create the catalog.' };
     }
     const catalog = readJson(catalogFile);
     const { fresh, changes } = checkDrift(installed, catalog);
     if (fresh) return { message: '' };
     if (changes.some((c) => c.type === 'missing-catalog')) {
-      return { message: 'skillset: catalog.json belum ada — jalankan /skillset:init untuk membuat katalog.' };
+      return { message: 'skillset: catalog.json not found — run /skillset:init to create the catalog.' };
     }
-    return { message: `skillset: ${changes.length} perubahan instalasi terdeteksi — jalankan /skillset:update untuk memperbarui katalog.` };
+    return { message: `skillset: ${changes.length} installation change(s) detected — run /skillset:update to refresh the catalog.` };
   } catch {
     return { message: '' }; // malformed/unreadable state -> stay silent
   }

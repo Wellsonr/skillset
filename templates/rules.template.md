@@ -1,14 +1,14 @@
 # Skillset Rules
 
-Rules di bawah hanya berlaku dalam workflow command skillset (`/skillset:make|development|plan|execute|review`), tidak pada sesi Claude Code biasa. Section `selalu` aktif di semua workflow; section lain aktif bila triggernya cocok dengan task. Edit file ini langsung, atau lewat `/skillset:rules`.
+The rules below apply only inside skillset workflow commands (`/skillset:make|development|plan|execute|review`), not in regular Claude Code sessions. The `always` section is active in every workflow; other sections are active when their trigger matches the task. Edit this file directly, or use `/skillset:rules`.
 
-## selalu
-- Setiap ada progress (fase selesai / milestone) → update dokumentasi terkait di docs/
+## always
+- On every progress step (phase done / milestone) → update the related documentation in docs/
 
 ## init
-- Baca CLAUDE.md + docs/ project dulu sebelum mulai workflow
+- Read the project's CLAUDE.md + docs/ before starting a workflow
 
 ## web-project
-<!-- trigger: task membangun web frontend baru -->
-- Wajib sertakan service-worker (PWA-ready)
-- Form login: dukung navigasi Tab + submit via Enter
+<!-- trigger: task builds a new web frontend -->
+- Always include a service worker (PWA-ready)
+- Login forms: support Tab navigation + submit via Enter

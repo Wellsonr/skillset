@@ -1,7 +1,7 @@
 {
   "name": "skillset",
-  "version": "0.2.0",
-  "description": "Router satu pintu untuk skill semua plugin user-scope: katalog otomatis, auto-install + auto-update, workflow berbasis intensi (make/development/plan/execute/review) dengan rules custom.",
+  "version": "0.2.1",
+  "description": "Single-entry router for skills across all your user-scope plugins: automatic catalog, auto-install + auto-update, and intent-based workflows (make/development/plan/execute/review) with custom rules.",
   "author": { "name": "Wellson" },
   "keywords": ["skills", "routing", "orchestration", "catalog"]
 }

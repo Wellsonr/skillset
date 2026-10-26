@@ -1,16 +1,16 @@
 ---
-description: Router — bangun sesuatu dari ide jadi kode bekerja (usulkan rantai skill lintas plugin → konfirmasi → eksekusi).
+description: Router — build something from an idea into working code (propose a cross-plugin skill chain → confirm → execute).
 argument-hint: "[task]"
 allowed-tools: Bash, Read, Skill, AskUserQuestion
 ---
 
-Task user: $ARGUMENTS
+User task: $ARGUMENTS
 
-Baca `${CLAUDE_PLUGIN_ROOT}/skills/router/SKILL.md` dengan tool Read, lalu ikuti prosedur router di sana dengan:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/router/SKILL.md` with the Read tool, then follow the router procedure there with:
 
-- **Archetype make** (rantai titik-awal, sesuaikan per task lewat hasil query):
-  1. `superpowers:brainstorming` — klasifikasi & desain
-  2. `mattpocock-skills:codebase-design` + `mattpocock-skills:domain-modeling` — bila struktur/domain signifikan
+- **Archetype make** (starting chain; adapt it per task using the query results):
+  1. `superpowers:brainstorming` — classification & design
+  2. `mattpocock-skills:codebase-design` + `mattpocock-skills:domain-modeling` — when the structure/domain is significant
   3. `superpowers:writing-plans` — implementation plan
   4. `superpowers:test-driven-development` ⇄ `mattpocock-skills:tdd`
   5. `mattpocock-skills:code-review`

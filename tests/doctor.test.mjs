@@ -30,11 +30,11 @@ test('doctorChecks: NaN generatedAt warns instead of silent ok', () => {
   const missing = doctorChecks({ ...okInputs(), catalog: { plugins: [], duplicates: [] } });
   const missingCheck = missing.find((c) => c.id === 'catalog');
   assert.equal(missingCheck.status, 'warn');
-  assert.match(missingCheck.detail, /generatedAt tidak valid/);
+  assert.match(missingCheck.detail, /generatedAt is invalid/);
   const garbage = doctorChecks({ ...okInputs(), catalog: { generatedAt: 'bukan-tanggal', plugins: [], duplicates: [] } });
   const garbageCheck = garbage.find((c) => c.id === 'catalog');
   assert.equal(garbageCheck.status, 'warn');
-  assert.match(garbageCheck.detail, /generatedAt tidak valid/);
+  assert.match(garbageCheck.detail, /generatedAt is invalid/);
 });
 
 test('doctorChecks: drift, manifest-missing-entry, no-rules, duplicates, src-mismatch warn', () => {

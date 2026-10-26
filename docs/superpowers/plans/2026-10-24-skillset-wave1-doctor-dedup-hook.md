@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Wave 1 plugin skillset — `/skillset:doctor` (audit konsistensi), deteksi skill duplikat lintas-plugin di `scan.mjs`, hook SessionStart warn-only.
+**Goal:** Wave 1 plugin skillset — `/skillset:doctor` (consistency audit), cross-plugin duplicate skill detection in `scan.mjs`, SessionStart hook warn-only.
 
-**Architecture:** Tiga tambahan mandadi di atas pola existing: pure function di `scan.mjs` (+ duplikat masuk katalog), script baru `doctor.mjs` yang mengonsumsi helper existing, dan hook read-only yang memanggil logika cek yang sama dengan `scan --check`.
+**Architecture:** Three additions on top of the existing pattern: pure functions in `scan.mjs` (+ duplicates go into the catalog), a new script `doctor.mjs` that consumes existing helpers, and a read-only hook that calls the same check logic as `scan --check`.
 
 **Tech Stack:** Node ESM `.mjs`, zero-dependency (node: builtins), `node --test`.
 
@@ -12,35 +12,35 @@
 
 ## Global Constraints
 
-- Zero-dependency: hanya import `node:` builtins.
-- Pola script: exported pure functions + `main(argv)` tipis + guard `if (process.argv[1] && process.argv[1].endsWith('<file>'))`.
-- Exit contract: `0` sehat / `1` ada temuan / `2` input malformed.
-- Doctor & hook **read-only**; hook SELALU exit 0 dan diam saat fresh.
-- Pesan konsol script bahasa Indonesia (ikuti `scan.mjs`/`sync.mjs`); header `catalog.md` English.
-- Full suite: `node --test tests/*.test.mjs` (bentuk glob; bentuk direktori gagal di Node 23.7.0). Semua test existing (38) wajib tetap hijau.
-- One commit per task, conventional commits (`feat(skillset)/docs(skillset)/chore(skillset)`), bahasa Indonesia seperti history repo.
+- Zero-dependency: only import `node:` builtins.
+- Script pattern: exported pure functions + thin `main(argv)` + guard `if (process.argv[1] && process.argv[1].endsWith('<file>'))`.
+- Exit contract: `0` healthy / `1` findings present / `2` malformed input.
+- Doctor & hook **read-only**; hook ALWAYS exits 0 and stays silent when fresh.
+- Console messages in scripts are in English (follow `scan.mjs`/`sync.mjs`); `catalog.md` header is English.
+- Full suite: `node --test tests/*.test.mjs` (glob form; directory form fails on Node 23.7.0). All existing tests (38) must stay green.
+- One commit per task, conventional commits (`feat(skillset)/docs(skillset)/chore(skillset)`), in English.
 
 ## Review Focus
 
-1. **Malformed JSON** di `catalog.json`/`installed_plugins.json`/`manifest.json` → doctor exit 2 dengan pesan (bukan stack trace); hook diam exit 0. → Task 2 & Task 3.
-2. **Katalog kosong / deskripsi kosong** → `findDuplicates` mengembalikan `[]` tanpa error. → Task 1.
-3. **Beda kapital/spasi** ("Review Code" vs "review  code!") → tetap terdeteksi duplikat (normalisasi token). → Task 1.
-4. **`generatedAt` di masa depan** (clock skew) → dianggap ok, bukan warn/usia negatif. → Task 2.
-5. **`installed_plugins.json` rusak saat sesi mulai** → hook diam, exit 0, sesi tetap jalan. → Task 3.
+1. **Malformed JSON** in `catalog.json`/`installed_plugins.json`/`manifest.json` → doctor exits 2 with a message (not a stack trace); hook stays silent and exits 0. → Task 2 & Task 3.
+2. **Empty catalog / empty description** → `findDuplicates` returns `[]` without error. → Task 1.
+3. **Case/whitespace differences** ("Review Code" vs "review  code!") → still detected as duplicates (token normalization). → Task 1.
+4. **`generatedAt` in the future** (clock skew) → treated as ok, not as a warning or negative age. → Task 2.
+5. **`installed_plugins.json` broken at session start** → hook stays silent, exits 0, the session still runs. → Task 3.
 
 ---
 
-### Task 1: `findDuplicates` + duplikat di katalog
+### Task 1: `findDuplicates` + duplicates in the catalog
 
 **Files:**
 - Modify: `scripts/scan.mjs`
 - Test: `tests/scan.test.mjs`
 
 **Interfaces:**
-- Consumes: `scanPlugins`, `renderCatalogMd` existing.
-- Produces: `findDuplicates(catalog, { threshold = 0.6 } = {})` → array `{ a, b, kind, similarity, sameName }` dengan `a`/`b` berformat `"<plugin>:<item>"` (urut pasangan alfabetis); `scanPlugins()` return menambah field `duplicates` (array, bisa `[]`); `renderCatalogMd` merender section `## Duplicates` (baris `- a ↔ b (similarity 0.82)`) hanya bila ada duplikat.
+- Consumes: existing `scanPlugins`, `renderCatalogMd`.
+- Produces: `findDuplicates(catalog, { threshold = 0.6 } = {})` → array of `{ a, b, kind, similarity, sameName }` with `a`/`b` formatted as `"<plugin>:<item>"` (pair sorted alphabetically); `scanPlugins()` return adds a `duplicates` field (array, may be `[]`); `renderCatalogMd` renders a `## Duplicates` section (lines `- a ↔ b (similarity 0.82)`) only when duplicates exist.
 
-- [ ] **Step 1: Write the failing tests** di `tests/scan.test.mjs` (import `findDuplicates`):
+- [ ] **Step 1: Write the failing tests** in `tests/scan.test.mjs` (import `findDuplicates`):
 
 ```js
 test('findDuplicates: same normalized name across plugins flagged; same-plugin ignored', () => {
@@ -82,16 +82,16 @@ test('scanPlugins includes duplicates field; renderCatalogMd renders Duplicates 
 
 - [ ] **Step 2: Run tests, verify FAIL** — `node --test tests/scan.test.mjs` → FAIL (`findDuplicates is not a function`).
 
-- [ ] **Step 3: Implement** di `scripts/scan.mjs`:
-  - `export function findDuplicates(catalog, { threshold = 0.6 } = {})`: tokenisasi `tokens(s) = (s.toLowerCase().match(/[a-z0-9]+/g) || [])`; similarity = Jaccard `|∩|/|∪|` atas token gabungan `name + ' ' + description` (set kosong × set kosong → similarity 0); bandingkan pasangan item **sesama kind** (`skills`, `commands`, `agents`) **lintas plugin**; flag bila `similarity >= threshold || sameName` (`sameName` = nama lowercase identik); setiap pasangan dilaporkan sekali dengan `a`/`b` diurut alfabetis.
-  - `scanPlugins`: hasil akhir menambah `duplicates: findDuplicates({ plugins })`.
-  - `renderCatalogMd`: bila `catalog.duplicates?.length`, push section `## Duplicates` + baris `` - `a` ↔ `b` (similarity N, sameName?) ``.
+- [ ] **Step 3: Implement** in `scripts/scan.mjs`:
+  - `export function findDuplicates(catalog, { threshold = 0.6 } = {})`: tokenization `tokens(s) = (s.toLowerCase().match(/[a-z0-9]+/g) || [])`; similarity = Jaccard `|∩|/|∪|` over the combined tokens of `name + ' ' + description` (empty set × empty set → similarity 0); compare pairs of items **of the same kind** (`skills`, `commands`, `agents`) **across plugins**; flag when `similarity >= threshold || sameName` (`sameName` = identical lowercase name); each pair is reported once with `a`/`b` sorted alphabetically.
+  - `scanPlugins`: final result adds `duplicates: findDuplicates({ plugins })`.
+  - `renderCatalogMd`: when `catalog.duplicates?.length`, push a `## Duplicates` section + lines `` - `a` ↔ `b` (similarity N, sameName?) ``.
 
-- [ ] **Step 4: Run full suite** — `node --test tests/*.test.mjs` → all PASS (38 existing + 3 baru).
+- [ ] **Step 4: Run full suite** — `node --test tests/*.test.mjs` → all PASS (38 existing + 3 new).
 
-- [ ] **Step 5: Commit** — `git add scripts/scan.mjs tests/scan.test.mjs && git commit -m "feat(skillset): deteksi duplikat skill lintas-plugin di katalog"`
+- [ ] **Step 5: Commit** — `git add scripts/scan.mjs tests/scan.test.mjs && git commit -m "feat(skillset): detect cross-plugin duplicate skills in catalog"`
 
-### Task 2: `doctor.mjs` — audit konsistensi (report-only)
+### Task 2: `doctor.mjs` — consistency audit (report-only)
 
 **Files:**
 - Create: `scripts/doctor.mjs`
@@ -99,19 +99,19 @@ test('scanPlugins includes duplicates field; renderCatalogMd renders Duplicates 
 
 **Interfaces:**
 - Consumes: `checkDrift(installed, catalog)` (scan.mjs), `diffManifest(manifest, installed)` (sync.mjs), `readJson/readInstalledUserPlugins/parseCliArgs/defaultPaths` (lib.mjs), `catalog.duplicates` (Task 1).
-- Produces: `doctorChecks({ catalog, installed, manifest, hasRules, srcVersion = null, installedVersion = null, now = new Date() })` → array `{ id, status: 'ok'|'warn'|'fail', detail }`; `main(argv)` → exit 0/1/2; flags: `--data-dir`, `--plugins-file`, `--skillset-src <dir>`, `--json`.
+- Produces: `doctorChecks({ catalog, installed, manifest, hasRules, srcVersion = null, installedVersion = null, now = new Date() })` → array of `{ id, status: 'ok'|'warn'|'fail', detail }`; `main(argv)` → exit 0/1/2; flags: `--data-dir`, `--plugins-file`, `--skillset-src <dir>`, `--json`.
 
-Semantik check (id → logika):
-- `catalog`: `catalog == null` → **fail** "catalog.json tidak ada — jalankan /skillset:init"; else umur = `now - Date.parse(generatedAt)`; umur > 7 hari → **warn**; umur negatif (future) → ok.
-- `drift`: skip bila catalog null; `checkDrift` → `!fresh` → **warn** "N perubahan — jalankan /skillset:update".
-- `manifest`: `manifest == null` → **warn** "manifest.json tidak ada — node sync.mjs --generate-manifest"; else `diffManifest(...).missing.length > 0` → **warn** "N plugin di manifest belum terpasang".
-- `rules`: `!hasRules` → **warn** "rules.md tidak ada — jalankan /skillset:init".
-- `duplicates`: `catalog.duplicates?.length > 0` → **warn** "N pasangan duplikat (lihat catalog.md)".
-- `skillset-src`: hanya bila `srcVersion && installedVersion` keduanya truthy; beda → **warn** "source vX ≠ terpasang vY — bump versi & publish, atau reinstall".
+Check semantics (id → logic):
+- `catalog`: `catalog == null` → **fail** "catalog.json not found — run /skillset:init"; else age = `now - Date.parse(generatedAt)`; age > 7 days → **warn**; negative age (future) → ok.
+- `drift`: skip when catalog is null; `checkDrift` → `!fresh` → **warn** "N changes — run /skillset:update".
+- `manifest`: `manifest == null` → **warn** "manifest.json not found — node sync.mjs --generate-manifest"; else `diffManifest(...).missing.length > 0` → **warn** "N plugin(s) in manifest not yet installed".
+- `rules`: `!hasRules` → **warn** "rules.md not found — run /skillset:init".
+- `duplicates`: `catalog.duplicates?.length > 0` → **warn** "N duplicate pair(s) (see catalog.md)".
+- `skillset-src`: only when `srcVersion && installedVersion` are both truthy; different → **warn** "source vX ≠ installed vY — bump version & publish, or reinstall".
 
-`main`: baca `catalog.json` (tidak ada → null; JSON invalid → pesan + **exit 2**), `installed_plugins.json` (invalid → **2**), `manifest.json` (tidak ada → null; invalid → **2**), `rules.md` exists di dataDir. `--skillset-src <dir>`: baca `<dir>/.claude-plugin/plugin.json` → `srcVersion`; installedVersion = entri `skillset@*` dari installed. Output: baris `[ok|warn|fail] id — detail` (atau JSON bila `--json`). Exit: ada warn/fail → 1; semua ok → 0.
+`main`: read `catalog.json` (missing → null; invalid JSON → message + **exit 2**), `installed_plugins.json` (invalid → **2**), `manifest.json` (missing → null; invalid → **2**), `rules.md` exists in dataDir. `--skillset-src <dir>`: read `<dir>/.claude-plugin/plugin.json` → `srcVersion`; installedVersion = the `skillset@*` entry from installed. Output: lines `[ok|warn|fail] id — detail` (or JSON with `--json`). Exit: any warn/fail → 1; all ok → 0.
 
-- [ ] **Step 1: Write the failing tests** di `tests/doctor.test.mjs`:
+- [ ] **Step 1: Write the failing tests** in `tests/doctor.test.mjs`:
 
 ```js
 function okInputs() {
@@ -169,15 +169,15 @@ test('doctor main: invalid catalog exits 2; healthy dir exits 0; --json prints c
 });
 ```
 
-- [ ] **Step 2: Run tests, verify FAIL** — `node --test tests/doctor.test.mjs` → FAIL (modul tidak ada).
+- [ ] **Step 2: Run tests, verify FAIL** — `node --test tests/doctor.test.mjs` → FAIL (module does not exist).
 
-- [ ] **Step 3: Implement** `scripts/doctor.mjs` sesuai semantik check di atas (header komentar satu baris gaya sync.mjs; guard `endsWith('doctor.mjs')`).
+- [ ] **Step 3: Implement** `scripts/doctor.mjs` according to the check semantics above (one-line header comment in the style of sync.mjs; guard `endsWith('doctor.mjs')`).
 
 - [ ] **Step 4: Run full suite** — `node --test tests/*.test.mjs` → all PASS.
 
-- [ ] **Step 5: Commit** — `git add scripts/doctor.mjs tests/doctor.test.mjs && git commit -m "feat(skillset): doctor.mjs audit konsistensi report-only exit 0/1/2"`
+- [ ] **Step 5: Commit** — `git add scripts/doctor.mjs tests/doctor.test.mjs && git commit -m "feat(skillset): doctor.mjs report-only consistency audit, exit 0/1/2"`
 
-### Task 3: Hook SessionStart warn-only
+### Task 3: SessionStart hook, warn-only
 
 **Files:**
 - Create: `hooks/hooks.json`
@@ -186,9 +186,9 @@ test('doctor main: invalid catalog exits 2; healthy dir exits 0; --json prints c
 
 **Interfaces:**
 - Consumes: `checkDrift` (scan.mjs), `readInstalledUserPlugins/readJson/defaultPaths` (lib.mjs).
-- Produces: `sessionStartCheck({ pluginsFile, dataDir } = {})` → `{ message }` — `message: ''` saat fresh **atau** saat input malformed; drift → pesan mengandung `/skillset:update`; catalog tidak ada → pesan mengandung `/skillset:init`. `main()` selalu exit 0, print message bila tidak kosong. `hooks/hooks.json` memanggil `node "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs"`.
+- Produces: `sessionStartCheck({ pluginsFile, dataDir } = {})` → `{ message }` — `message: ''` when fresh **or** when input is malformed; drift → message contains `/skillset:update`; missing catalog → message contains `/skillset:init`. `main()` always exits 0, prints the message if not empty. `hooks/hooks.json` calls `node "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs"`.
 
-- [ ] **Step 1: Write the failing tests** di `tests/hook.test.mjs`:
+- [ ] **Step 1: Write the failing tests** in `tests/hook.test.mjs`:
 
 ```js
 test('sessionStartCheck: fresh silent, drift suggests update, missing catalog suggests init, malformed silent', () => {
@@ -218,10 +218,10 @@ test('hooks.json valid & wired to session-start.mjs', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests, verify FAIL** — `node --test tests/hook.test.mjs` → FAIL (modul tidak ada).
+- [ ] **Step 2: Run tests, verify FAIL** — `node --test tests/hook.test.mjs` → FAIL (module does not exist).
 
 - [ ] **Step 3: Implement**:
-  - `hooks/session-start.mjs`: `export function sessionStartCheck({ pluginsFile = defaultPaths().pluginsFile, dataDir = defaultPaths().dataDir } = {})` — try/catch semua pembacaan; baca installed + catalog → `checkDrift` → susun `message` sesuai semantik; guard `main()` bila `process.argv[1].endsWith('session-start.mjs')`: `const { message } = sessionStartCheck(); if (message) console.log(message); process.exit(0);` (SELALU exit 0).
+  - `hooks/session-start.mjs`: `export function sessionStartCheck({ pluginsFile = defaultPaths().pluginsFile, dataDir = defaultPaths().dataDir } = {})` — try/catch around all reads; read installed + catalog → `checkDrift` → build `message` according to the semantics; guard `main()` when `process.argv[1].endsWith('session-start.mjs')`: `const { message } = sessionStartCheck(); if (message) console.log(message); process.exit(0);` (ALWAYS exit 0).
   - `hooks/hooks.json`:
 
 ```json
@@ -241,29 +241,29 @@ test('hooks.json valid & wired to session-start.mjs', () => {
 
 - [ ] **Step 4: Run full suite + validate** — `node --test tests/*.test.mjs` all PASS; `claude plugin validate .` → pass.
 
-- [ ] **Step 5: Commit** — `git add hooks/ tests/hook.test.mjs && git commit -m "feat(skillset): hook SessionStart warn-only — cek drift baca-saja, selalu exit 0"`
+- [ ] **Step 5: Commit** — `git add hooks/ tests/hook.test.mjs && git commit -m "feat(skillset): SessionStart hook warn-only — read-only drift check, always exit 0"`
 
-### Task 4: Command doctor + docs + bump 0.2.0
+### Task 4: Doctor command + docs + bump to 0.2.0
 
 **Files:**
 - Create: `commands/doctor.md`
-- Modify: `README.md` (tabel Commands + baris `/skillset:doctor`)
-- Modify: `docs/manual-verification.md` (+ section doctor & hook)
+- Modify: `README.md` (Commands table + `/skillset:doctor` row)
+- Modify: `docs/manual-verification.md` (+ doctor & hook section)
 - Modify: `.claude-plugin/plugin.json` & `.claude-plugin/marketplace.json` (version `0.1.1` → `0.2.0`)
 
 **Interfaces:**
 - Consumes: `scripts/doctor.mjs` (Task 2), `hooks/session-start.mjs` (Task 3).
-- Produces: command `/skillset:doctor` terdaftar; versi 0.2.0 di kedua manifest.
+- Produces: command `/skillset:doctor` registered; version 0.2.0 in both manifests.
 
-- [ ] **Step 1: Write** `commands/doctor.md` mengikuti pola `commands/update.md` (frontmatter `description` Indonesia + `allowed-tools: Bash`): jalankan `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs" --skillset-src <repo skillset bila ada>`, laporkan tiap check warn/fail + saran perbaikannya, ringkas status akhir. Ingatkan: doctor hanya melapor, tidak mengubah apa pun.
-- [ ] **Step 2: README** — tambah baris tabel: `| /skillset:doctor | Consistency audit: catalog, drift, manifest, rules, duplicates |` (English, konsisten README baru).
-- [ ] **Step 3: manual-verification.md** — tambah item centang: (a) `node scripts/doctor.mjs` di data nyata → exit 0 atau 1 dengan check terbaca; (b) `node hooks/session-start.mjs` manual → keluar tanpa output saat katalog fresh; (c) ubah satu versi di katalog → hook mencetak 1 baris `/skillset:update`; kembalikan.
-- [ ] **Step 4: Bump** `version` → `0.2.0` di `plugin.json` + `marketplace.json`.
+- [ ] **Step 1: Write** `commands/doctor.md` following the pattern of `commands/update.md` (frontmatter `description` in English + `allowed-tools: Bash`): run `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs" --skillset-src <skillset repo if available>`, report each warn/fail check with its suggested fix, summarize the final status. Remind that doctor only reports and does not change anything.
+- [ ] **Step 2: README** — add table row: `| /skillset:doctor | Consistency audit: catalog, drift, manifest, rules, duplicates |` (English, consistent with the new README).
+- [ ] **Step 3: manual-verification.md** — add checkbox items: (a) `node scripts/doctor.mjs` on real data → exit 0 or 1 with each check readable; (b) `node hooks/session-start.mjs` run manually → exits with no output when the catalog is fresh; (c) change one version in the catalog → hook prints 1 line suggesting `/skillset:update`; restore it.
+- [ ] **Step 4: Bump** `version` → `0.2.0` in `plugin.json` + `marketplace.json`.
 - [ ] **Step 5: Verify** — `node --test tests/*.test.mjs` all PASS; `claude plugin validate .` pass.
-- [ ] **Step 6: Commit** — `git add -A && git commit -m "chore(skillset): rilis 0.2.0 — command doctor, docs wave 1, bump versi"`
+- [ ] **Step 6: Commit** — `git add -A && git commit -m "chore(skillset): release 0.2.0 — doctor command, wave 1 docs, version bump"`
 
 ## Self-Review Notes
 
-- Spec coverage: 3 keputusan desain roadmap (hook warn-only, doctor report-only, duplikat konservatif) → Task 3, Task 2, Task 1; kontrak exit → semua task. ✓
-- Type consistency: `findDuplicates`/`doctorChecks`/`sessionStartCheck` dipakai konsisten lintas task; `catalog.duplicates` dibaca Task 2 sesuai bentuk Task 1. ✓
-- Proportion: plan ~1/3 kode aktual yang dihasilkan — body hanya untuk algoritma yang ditentukan spec (tokenisasi/Jaccard, semantik check). ✓
+- Spec coverage: 3 roadmap design decisions (hook warn-only, doctor report-only, conservative duplicates) → Task 3, Task 2, Task 1; exit contract → all tasks. ✓
+- Type consistency: `findDuplicates`/`doctorChecks`/`sessionStartCheck` used consistently across tasks; `catalog.duplicates` read in Task 2 matches the shape from Task 1. ✓
+- Proportion: the plan yields roughly 1/3 of the actual code — bodies are only given for algorithms the spec defines (tokenization/Jaccard, check semantics). ✓

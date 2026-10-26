@@ -1,34 +1,34 @@
 # Skillset Waves Roadmap — Wave 1 Design
 
-> 2026-10-24. Roadmap 7 fitur hasil review pasca-v0.1.1. Gelombang penuh ada di dokumen ini; wave 1 dieksekusi sekarang, wave 2–3 menyusul dengan plan sendiri.
+> 2026-10-24. Roadmap of 7 features resulting from the review after v0.1.1. The full waves are in this document; wave 1 is executed now, waves 2–3 follow with their own plans.
 
-## Latar
+## Background
 
-v0.1.1 live di GitHub (`main` = split polyrepo). Pain nyata: (1) `claude plugin update` melewatkan konten baru bila `plugin.json` tidak di-bump — terbukti 2026-10-23; (2) katalog stale hanya terdeteksi saat command router dijalankan manual; (3) 38+ tes hijau, katalog 470 skill lintas plugin, banyak duplikat — tabel substitusi manual di `skills/router/SKILL.md` dirawat tangan.
+v0.1.1 is live on GitHub (`main` = polyrepo split). Real pain points: (1) `claude plugin update` skips new content when `plugin.json` is not bumped — confirmed on 2026-10-23; (2) a stale catalog is only detected when the router command is run manually; (3) 38+ tests green, a catalog of 470 skills across plugins, and many duplicates — the manual substitution table in `skills/router/SKILL.md` is maintained by hand.
 
-## Fitur per gelombang
+## Features per wave
 
-- **Gelombang 1 (plan: `2026-10-24-skillset-wave1-doctor-dedup-hook.md`):** #1 `/skillset:doctor`, #7 deteksi duplikat lintas-plugin, #2 hook SessionStart warn-only.
-- **Gelombang 2:** #3 usage log + `/skillset:stats`, #6 custom chain template.
-- **Gelombang 3:** #4 token-aware routing (ranking + estimasi biaya token), #5 rules v2 (validasi trigger, rules per-project).
+- **Wave 1 (plan: `2026-10-24-skillset-wave1-doctor-dedup-hook.md`):** #1 `/skillset:doctor`, #7 cross-plugin duplicate detection, #2 SessionStart hook warn-only.
+- **Wave 2:** #3 usage log + `/skillset:stats`, #6 custom chain template.
+- **Wave 3:** #4 token-aware routing (ranking + token cost estimate), #5 rules v2 (trigger validation, per-project rules).
 
-## Keputusan desain Gelombang 1 (user: "gas" → default saya, tercatat sebagai keputusan saya)
+## Wave 1 design decisions (user: "gas" → my defaults, recorded as my decisions)
 
-1. **Hook warn-only, tidak pernah auto-update.** SessionStart menjalankan cek drift baca-saja. Katalog stale → satu baris peringatan yang menyasar `/skillset:update`; katalog belum ada → sarankan `/skillset:init`; SELALU exit 0, dan **diam saat fresh** — nol tambahan konteks tiap sesi sehat.
-2. **Doctor report-only.** Tidak pernah memodifikasi state plugin. Check: catalog exists + umur (warn > 7 hari), drift (reuse `checkDrift`), manifest↔installed (`diffManifest`), `rules.md` ada, ringkasan duplikat, flag opsional `--skillset-src <dir>` (versi source vs terpasang — menangkap jebakan lupa bump/publish).
-3. **Duplikat konservatif.** Flag bila Jaccard ≥ 0.6 atas token `name + description` (lowercase, split non-alphanumeric) ATAU nama ternormalisasi identik — hanya antar plugin, hanya sesama kind. Hasil di `catalog.json.duplicates` + section `catalog.md`.
+1. **Hook warn-only, never auto-updates.** SessionStart runs a read-only drift check. Stale catalog → a single warning line pointing to `/skillset:update`; missing catalog → suggest `/skillset:init`; ALWAYS exits 0, and **stays silent when fresh** — zero extra context in every healthy session.
+2. **Doctor is report-only.** Never modifies plugin state. Checks: catalog exists + age (warn > 7 days), drift (reuses `checkDrift`), manifest↔installed (`diffManifest`), `rules.md` exists, duplicate summary, optional flag `--skillset-src <dir>` (source version vs installed — catches the forgotten bump/publish trap).
+3. **Conservative duplicates.** Flag when Jaccard ≥ 0.6 over the tokens of `name + description` (lowercase, split on non-alphanumerics) OR when normalized names are identical — only across plugins, only within the same kind. Results go into `catalog.json.duplicates` + a section in `catalog.md`.
 
-## Goals / Non-goals / Anti-goals (Gelombang 1)
+## Goals / Non-goals / Anti-goals (Wave 1)
 
-- **Goals:** deteksi dini katalog/state stale; satu command audit sekali-jalan; sinyal duplikasi tabel substitusi otomatis.
-- **Non-goals:** auto-fix apa pun (update/install/bump otomatis), semantic similarity (embeddings), cek versi ke registry jarak jauh.
+- **Goals:** early detection of stale catalog/state; a single one-shot audit command; automatic signal of substitution-table duplication.
+- **Non-goals:** any auto-fix (automatic update/install/bump), semantic similarity (embeddings), remote registry version checks.
 - **Anti-goals:**
-  - Hook yang menambah latensi/konteks tiap sesi sehat.
-  - Doctor yang memicu aksi tanpa persetujuan user.
-  - Deteksi duplikat yang berisik (false positive flooding catalog.md).
+  - A hook that adds latency/context to every healthy session.
+  - A doctor that triggers actions without user approval.
+  - Noisy duplicate detection (false-positive flooding of catalog.md).
 
-## Kontrak (mengikuti scan/query/sync)
+## Contract (following scan/query/sync)
 
-- Exit: `0` sehat / `1` ada temuan / 2 input malformed.
-- Zero-dependency: hanya `node:` builtins; ESM `.mjs`.
-- Hook & doctor **read-only** terhadap state plugin.
+- Exit: `0` healthy / `1` findings present / 2 malformed input.
+- Zero-dependency: only `node:` builtins; ESM `.mjs`.
+- Hook & doctor are **read-only** with respect to plugin state.

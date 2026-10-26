@@ -49,14 +49,14 @@ export function main(argv) {
   const dataDir = flags['data-dir'] || defaults.dataDir;
   const catalogFile = join(dataDir, 'catalog.json');
   if (!existsSync(catalogFile)) {
-    console.error('Katalog belum ada. Jalankan /skillset:init (atau: node scripts/scan.mjs).');
+    console.error('Catalog not found. Run /skillset:init (or: node scripts/scan.mjs).');
     return 2;
   }
   let catalog;
   try {
     catalog = readJson(catalogFile);
   } catch (err) {
-    console.error(`${catalogFile} tidak valid: ${err.message}`);
+    console.error(`${catalogFile} is invalid: ${err.message}`);
     return 2;
   }
   if (flags.summary) {
@@ -66,7 +66,7 @@ export function main(argv) {
   const top = Number(flags.top || 12);
   const rows = scoreEntries(catalog, positional).slice(0, top);
   if (flags.json) console.log(JSON.stringify(rows, null, 2));
-  else console.log(rows.length ? formatResults(rows) : 'Tidak ada hasil untuk keyword tersebut.');
+  else console.log(rows.length ? formatResults(rows) : 'No results for that keyword.');
   return 0;
 }
 

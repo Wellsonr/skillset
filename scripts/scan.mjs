@@ -129,7 +129,7 @@ export async function main(argv) {
     try {
       installed = readInstalledUserPlugins(pluginsFile);
     } catch (err) {
-      console.error(`${pluginsFile} tidak valid: ${err.message}`);
+      console.error(`${pluginsFile} is invalid: ${err.message}`);
       return 2;
     }
     if (!existsSync(catalogFile)) {
@@ -140,7 +140,7 @@ export async function main(argv) {
     try {
       catalog = readJson(catalogFile);
     } catch (err) {
-      console.error(`${catalogFile} tidak valid: ${err.message}`);
+      console.error(`${catalogFile} is invalid: ${err.message}`);
       return 2;
     }
     const result = checkDrift(installed, catalog);
@@ -152,7 +152,7 @@ export async function main(argv) {
   try {
     catalog = scanPlugins({ pluginsFile });
   } catch (err) {
-    console.error(`${pluginsFile} tidak valid: ${err.message}`);
+    console.error(`${pluginsFile} is invalid: ${err.message}`);
     return 2;
   }
   ensureDir(dataDir);

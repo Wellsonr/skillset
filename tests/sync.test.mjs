@@ -153,7 +153,7 @@ test('runSync keeps partial results when one spawn call throws', () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-test('main labels unreadable installed.json with file path, not sync gagal', () => {
+test('main labels unreadable installed.json with file path, not sync failed', () => {
   const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
   writeJson(join(dir, 'manifest.json'), { autoUpdate: true, plugins: ['a@m1'] });
   const pluginsFile = join(dir, 'installed.json');
@@ -169,9 +169,9 @@ test('main labels unreadable installed.json with file path, not sync gagal', () 
   }
   assert.equal(code, 2);
   const output = errs.join('\n');
-  assert.ok(output.includes('tidak bisa dibaca'), `expected read-failure label in: ${output}`);
+  assert.ok(output.includes('cannot be read'), `expected read-failure label in: ${output}`);
   assert.ok(output.includes(pluginsFile), `expected file path in: ${output}`);
-  assert.ok(!output.includes('sync gagal'), `sync gagal mislabel leaked: ${output}`);
+  assert.ok(!output.includes('sync failed'), `sync failed mislabel leaked: ${output}`);
   rmSync(dir, { recursive: true, force: true });
 });
 
@@ -191,8 +191,8 @@ test('main distinguishes manifest IO error from invalid JSON', () => {
   }
   assert.equal(code, 2);
   const output = errs.join('\n');
-  assert.ok(output.includes('manifest.json tidak bisa dibaca'), `expected IO label in: ${output}`);
-  assert.ok(!output.includes('tidak valid'), `invalid-JSON label leaked: ${output}`);
+  assert.ok(output.includes('manifest.json cannot be read'), `expected IO label in: ${output}`);
+  assert.ok(!output.includes('is invalid'), `invalid-JSON label leaked: ${output}`);
   rmSync(dir, { recursive: true, force: true });
 });
 
@@ -214,7 +214,7 @@ test('runSync records marketplace update failure without blocking', () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-test('main keeps manifest tidak valid label for malformed manifest JSON', () => {
+test('main keeps manifest is invalid label for malformed manifest JSON', () => {
   const dir = mkdtempSync(join(tmpdir(), 'skillset-sync-'));
   writeFileSync(join(dir, 'manifest.json'), '{not json');
   const pluginsFile = join(dir, 'installed.json');
@@ -229,7 +229,7 @@ test('main keeps manifest tidak valid label for malformed manifest JSON', () => 
     console.error = origError;
   }
   assert.equal(code, 2);
-  assert.ok(errs.join('\n').includes('manifest.json tidak valid'));
+  assert.ok(errs.join('\n').includes('manifest.json is invalid'));
   rmSync(dir, { recursive: true, force: true });
 });
 
@@ -278,7 +278,7 @@ test('generate-manifest exits 2 when plugins file missing', () => {
   }
   assert.equal(code, 2);
   const output = errs.join('\n');
-  assert.ok(output.includes('plugins file tidak ditemukan'), `expected missing-file hint in: ${output}`);
+  assert.ok(output.includes('plugins file not found'), `expected missing-file hint in: ${output}`);
   rmSync(dir, { recursive: true, force: true });
 });
 
@@ -299,7 +299,7 @@ test('generate-manifest exits 2 with message when manifest cannot be written', (
   }
   assert.equal(code, 2);
   const output = errs.join('\n');
-  assert.ok(output.includes('gagal generate manifest'), `expected write-failure label in: ${output}`);
+  assert.ok(output.includes('failed to generate manifest'), `expected write-failure label in: ${output}`);
   rmSync(dir, { recursive: true, force: true });
 });
 

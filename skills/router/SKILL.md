@@ -1,24 +1,24 @@
 ---
 name: router
-description: Prosedur routing bersama semua command router skillset (make/development/plan/execute/review) — pre-flight anti-stale, pemilihan rantai skill lintas plugin, usulan-konfirmasi, eksekusi berantai, penerapan rules.
+description: Shared routing procedure for all skillset router commands (make/development/plan/execute/review) — anti-stale pre-flight, cross-plugin skill chain selection, propose-then-confirm, chained execution, rules application.
 ---
 
-# Prosedur Router Skillset
+# Skillset Router Procedure
 
-Command pemanggil memberikan: **archetype** (tabel rantai titik-awal) dan **task**. Ikuti langkah:
+The calling command provides: an **archetype** (starting chain table) and a **task**. Follow these steps:
 
-1. **Pre-flight anti-stale.** Jalankan `node "${CLAUDE_PLUGIN_ROOT}/scripts/scan.mjs" --check`.
-   - Exit 1 dengan `missing-catalog` → tawarkan menjalankan `/skillset:init` dulu; jangan lanjut sebelum user memilih.
-   - Exit 1 dengan drift (`added`/`version`/`removed`) → tawarkan `/skillset:update`; user boleh menolak dan lanjut dengan katalog lama.
-2. **Deteksi task trivial.** Bila task bukan proyek/workflow (pertanyaan kecil, permintaan satu baris), sampaikan bahwa rantai skill tidak diperlukan, jawab langsung, selesai.
-3. **Load selektif.** Jalankan `node "${CLAUDE_PLUGIN_ROOT}/scripts/query.mjs" <keyword domain task>` (WAJIB lewat query — JANGAN membaca `catalog.json`/`catalog.md` penuh). Lalu `Read ~/.claude/skillset/data/rules.md`; bila belum ada → tawarkan `/skillset:init`.
-4. **Susun rantai.** Mulai dari archetype command, sesuaikan dengan hasil query (hanya skill yang benar-benar tersedia di katalog). Substitusi dua arah bila skill tak tersedia:
+1. **Anti-stale pre-flight.** Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/scan.mjs" --check`.
+   - Exit 1 with `missing-catalog` → offer to run `/skillset:init` first; do not continue until the user chooses.
+   - Exit 1 with drift (`added`/`version`/`removed`) → offer `/skillset:update`; the user may decline and continue with the old catalog.
+2. **Detect trivial tasks.** If the task is not a project/workflow (a small question, a one-line request), say that no skill chain is needed, answer directly, and stop.
+3. **Selective load.** Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/query.mjs" <task domain keywords>` (MUST go through query — do NOT read the full `catalog.json`/`catalog.md`). Then `Read ~/.claude/skillset/data/rules.md`; if it does not exist → offer `/skillset:init`.
+4. **Compose the chain.** Start from the command's archetype and adapt it to the query results (only skills that actually exist in the catalog). Substitute in both directions when a skill is unavailable:
    - `superpowers:test-driven-development` ⇄ `mattpocock-skills:tdd`
    - `pr-review-toolkit:code-reviewer` ⇄ `ecc:code-reviewer`
-   - review utama: `mattpocock-skills:code-review` ⇄ `pr-review-toolkit:review-pr`
+   - primary review: `mattpocock-skills:code-review` ⇄ `pr-review-toolkit:review-pr`
 
-   Skill tanpa substitusi → usulkan skip dengan catatan.
-5. **Tentukan rules aktif.** Section `selalu` selalu aktif; section lain (mis. `web-project`) aktif bila triggernya cocok task. Sebutkan rules yang akan diterapkan.
-6. **USULKAN → tunggu konfirmasi eksplisit.** Tampilkan tabel: skill → peran → alasan; rules aktif; file yang akan dibaca. JANGAN eksekusi apa pun sebelum user menyetujui (atau mengubah lalu menyetujui).
-7. **Eksekusi berantai.** Invoke skill via Skill tool sesuai urutan. Sebelum tiap fase, cek rules yang relevan fase tersebut. Hormati gate internal tiap skill (mis. approval brainstorming TIDAK di-bypass).
-8. **Ringkasan akhir.** Hasil per fase, status penerapan rules (mis. docs mana yang di-update), saran follow-up (`/skillset:review`, `/skillset:update`, dst.).
+   A skill with no substitute → propose skipping it, with a note.
+5. **Decide the active rules.** The `always` section is always active (`selalu` is accepted as a legacy alias for the same section); other sections (e.g. `web-project`) are active when their trigger matches the task. State which rules will be applied.
+6. **PROPOSE → wait for explicit confirmation.** Show a table: skill → role → reason; active rules; files that will be read. Do NOT execute anything before the user approves (or edits and then approves).
+7. **Chained execution.** Invoke skills via the Skill tool in order. Before each phase, check the rules relevant to that phase. Respect each skill's internal gates (e.g. the brainstorming approval is NOT bypassed).
+8. **Final summary.** Results per phase, rules application status (e.g. which docs were updated), follow-up suggestions (`/skillset:review`, `/skillset:update`, etc.).

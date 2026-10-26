@@ -26,7 +26,7 @@ export function buildUpdateCmd(key) {
 
 export function runSync({ manifestFile, pluginsFile, dryRun = false, spawn = spawnSync }) {
   if (!existsSync(manifestFile)) {
-    return { error: 'manifest-missing', hint: 'jalankan: node sync.mjs --generate-manifest' };
+    return { error: 'manifest-missing', hint: 'run: node sync.mjs --generate-manifest' };
   }
   const manifest = readJson(manifestFile);
   const installed = readInstalledUserPlugins(pluginsFile);
@@ -73,14 +73,14 @@ export function main(argv, deps = {}) {
       return 0;
     }
     if (!existsSync(pluginsFile)) {
-      console.error(`plugins file tidak ditemukan: ${pluginsFile}`);
+      console.error(`plugins file not found: ${pluginsFile}`);
       return 2;
     }
     try {
       ensureDir(dataDir);
       writeJson(manifestFile, generateManifest(readInstalledUserPlugins(pluginsFile)));
     } catch (err) {
-      console.error(`gagal generate manifest: ${err.message}`);
+      console.error(`failed to generate manifest: ${err.message}`);
       return 2;
     }
     console.log(JSON.stringify({ generated: true, file: manifestFile }));
@@ -94,21 +94,21 @@ export function main(argv, deps = {}) {
   try {
     readJson(manifestFile);
   } catch (err) {
-    const label = err instanceof SyntaxError ? 'manifest.json tidak valid' : 'manifest.json tidak bisa dibaca';
+    const label = err instanceof SyntaxError ? 'manifest.json is invalid' : 'manifest.json cannot be read';
     console.error(`${label}: ${err.message}`);
     return 2;
   }
   try {
     readInstalledUserPlugins(pluginsFile);
   } catch (err) {
-    console.error(`${pluginsFile} tidak bisa dibaca: ${err.message}`);
+    console.error(`${pluginsFile} cannot be read: ${err.message}`);
     return 2;
   }
   let result;
   try {
     result = runSync({ manifestFile, pluginsFile, dryRun: Boolean(flags['dry-run']), spawn: deps.spawn });
   } catch (err) {
-    console.error(`sync gagal: ${err.message}`);
+    console.error(`sync failed: ${err.message}`);
     return 2;
   }
   console.log(JSON.stringify(result));

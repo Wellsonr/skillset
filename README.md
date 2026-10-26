@@ -6,7 +6,7 @@
 
 Describe what you want to do. skillset picks the right chain of skills across your plugins, shows you the plan, and runs it once you approve.
 
-![version](https://img.shields.io/badge/version-0.2.0-blue)
+![version](https://img.shields.io/badge/version-0.2.1-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![tests](https://img.shields.io/badge/tests-49%20passing-brightgreen)
 ![dependencies](https://img.shields.io/badge/dependencies-zero-lightgrey)
