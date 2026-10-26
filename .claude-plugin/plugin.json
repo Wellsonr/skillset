@@ -1,6 +1,6 @@
 {
   "name": "skillset",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Single-entry router for skills across all your user-scope plugins: automatic catalog, auto-install + auto-update, and intent-based workflows (make/development/plan/execute/review) with custom rules.",
   "author": { "name": "Wellson" },
   "keywords": ["skills", "routing", "orchestration", "catalog"]
