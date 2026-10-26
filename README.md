@@ -6,7 +6,7 @@
 
 Describe what you want to do. skillset picks the right chain of skills across your plugins, shows you the plan, and runs it once you approve.
 
-![version](https://img.shields.io/badge/version-0.3.0-blue)
+![version](https://img.shields.io/badge/version-0.3.1-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![tests](https://img.shields.io/badge/tests-55%20passing-brightgreen)
 ![dependencies](https://img.shields.io/badge/dependencies-zero-lightgrey)
@@ -131,7 +131,7 @@ Catalog queries now return 5 short rows instead of 12 long ones, **75–79% less
 skillset is built to be cheap to run. Routing itself costs roughly 1,500 tokens, and the full catalog is never loaded. Most of the real cost is the skills a chain loads and the model that runs them, so the router trims both:
 
 - **Task sizing.** `make` and `development` size the task first. A small change runs just TDD, verification and commit (about 3,500 tokens of skill text) instead of the full 11-skill lifecycle (about 17,000), roughly 79% less. Tasks touching auth, payments, DB migrations or secrets are never sized below medium. Add `--full` to the task to force the whole chain.
-- **Cheaper models for mechanical phases.** Verification, commits and finishing a branch run in Haiku subagents, and implementation and reviews in Sonnet subagents. Skills that need your input always stay in your session model. Override any phase in the `## models` section of `~/.claude/skillset/data/rules.md` (`haiku`, `sonnet`, `opus` or `main`).
+- **Cheaper models for mechanical phases.** The router assigns a model to every phase and can run mechanical ones (verification, commits, finishing a branch) in Haiku subagents, and implementation and reviews in Sonnet subagents. It delegates only when that pays off, so on very small tasks everything stays inline, because spawning a subagent costs more than it saves. Skills that need your input always stay in your session model. Override any phase in the `## models` section of `~/.claude/skillset/data/rules.md` (`haiku`, `sonnet`, `opus` or `main`).
 - **Lean catalog queries.** `query` returns the top 5 matches with short descriptions, about 75–80% less output. Use `--full` for the old behavior.
 - **Fewer plugins, smaller prompt.** Every installed plugin lists its skills in each session's system prompt. Disable plugins you no longer use to cut that fixed cost.
 

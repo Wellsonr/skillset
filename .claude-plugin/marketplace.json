@@ -3,7 +3,7 @@
   "owner": { "name": "Wellson" },
   "metadata": {
     "description": "Marketplace for the skillset plugin",
-    "version": "0.3.0"
+    "version": "0.3.1"
   },
   "plugins": [
     {

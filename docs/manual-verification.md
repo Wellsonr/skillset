@@ -36,7 +36,7 @@ Perform after installation (restart the session). Check off when passing.
 - [ ] `/skillset:make fix a typo in the README title` → sized **small**; proposal shows ≤3 skills with a model column and the trimmed steps; nothing runs before confirmation
 - [ ] `/skillset:make add a login endpoint with JWT` → sized at least **medium** (auth is never below medium)
 - [ ] `/skillset:make --full add a CSV export button` → `--full` stripped from the task; the full archetype chain is proposed
-- [ ] Approve a chain with `verification-before-completion: haiku` → it runs in a Haiku subagent; `brainstorming` stays in the session model
+- [ ] Approve a **medium** chain with `verification-before-completion: haiku` → it may run in a Haiku subagent (small tasks stay inline by design); `brainstorming` always stays in the session model
 - [ ] Remove the `## models` section from `rules.md` → router falls back to the built-in defaults; a legacy `## selalu` section is still honored as `always`
 - [ ] `node scripts/query.mjs react vite` prints ≤5 short entries; `--full` restores up to 12 full descriptions
 

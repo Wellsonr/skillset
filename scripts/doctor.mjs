@@ -19,7 +19,7 @@ export function doctorChecks({ catalog, installed, manifest, hasRules, srcVersio
     } else if (ageDays > 7) {
       checks.push({ id: 'catalog', status: 'warn', detail: `catalog is ${Math.floor(ageDays)} day(s) old — run /skillset:update` });
     } else {
-      checks.push({ id: 'catalog', status: 'ok', detail: 'catalog segar' });
+      checks.push({ id: 'catalog', status: 'ok', detail: 'catalog is fresh' });
     }
   }
 
@@ -28,7 +28,7 @@ export function doctorChecks({ catalog, installed, manifest, hasRules, srcVersio
     if (!fresh) {
       checks.push({ id: 'drift', status: 'warn', detail: `${changes.length} change(s) — run /skillset:update` });
     } else {
-      checks.push({ id: 'drift', status: 'ok', detail: 'catalog sesuai instalasi' });
+      checks.push({ id: 'drift', status: 'ok', detail: 'catalog matches installed plugins' });
     }
   }
 
@@ -39,14 +39,14 @@ export function doctorChecks({ catalog, installed, manifest, hasRules, srcVersio
     if (missing.length > 0) {
       checks.push({ id: 'manifest', status: 'warn', detail: `${missing.length} manifest plugin(s) not installed` });
     } else {
-      checks.push({ id: 'manifest', status: 'ok', detail: 'manifest sesuai instalasi' });
+      checks.push({ id: 'manifest', status: 'ok', detail: 'manifest matches installed plugins' });
     }
   }
 
   if (!hasRules) {
     checks.push({ id: 'rules', status: 'warn', detail: 'rules.md not found — run /skillset:init' });
   } else {
-    checks.push({ id: 'rules', status: 'ok', detail: 'rules.md ada' });
+    checks.push({ id: 'rules', status: 'ok', detail: 'rules.md found' });
   }
 
   const dupCount = catalog?.duplicates?.length ?? 0;
