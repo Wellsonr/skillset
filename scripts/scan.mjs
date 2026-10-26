@@ -112,7 +112,7 @@ export function renderCatalogMd(catalog) {
       `- ${d.a} ↔ ${d.b} (similarity ${d.similarity.toFixed(2)}${d.sameName ? ', sameName' : ''})`), '');
   }
   if (catalog.skipped?.length) {
-    lines.push('## Skipped (installPath hilang)', '', ...catalog.skipped.map((k) => `- ${k}`), '');
+    lines.push('## Skipped (installPath missing)', '', ...catalog.skipped.map((k) => `- ${k}`), '');
   }
   return lines.join('\n');
 }

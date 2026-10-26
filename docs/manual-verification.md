@@ -4,7 +4,7 @@ Perform after installation (restart the session). Check off when passing.
 
 ## Unit & structure
 - [ ] `node --test tests/*.test.mjs` → all PASS (lib, scan, sync, query, doctor, hook)
-- [ ] `claude plugin validate /config/workspace/ai/skillset` → passes
+- [ ] `claude plugin validate .` → passes
 - [ ] `node scripts/scan.mjs --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → catalog generated in /tmp/skillset-smoke
 - [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; change a fixture version → exit 1
 - [ ] (after `/skillset:init`) `node scripts/sync.mjs --dry-run` → exit 0, `dryRunCommands` printed, no real spawns

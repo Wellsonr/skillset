@@ -4,7 +4,7 @@
 - **Status:** Draft → awaiting user review
 - **Classification:** Architectural (new project, new plugin)
 - **Selected approach:** A — Persistent catalog + router prompt + anti-stale check
-- **Plugin repo:** `/config/workspace/ai/skillset`
+- **Plugin repo:** `<repo-root>`
 
 ---
 
@@ -215,7 +215,7 @@ All are zero-dependency Node ESM. Commands reference them with `!`node ${CLAUDE_
 
 ## 8. Testing & Validation
 
-- `claude plugin validate /config/workspace/ai/skillset` — gate for manifest and component structure.
+- `claude plugin validate .` — gate for manifest and component structure.
 - Unit tests `tests/scan.test.mjs` with fake plugin directory fixtures: frontmatter parsing (including multi-line descriptions), `--check` drift detection, catalog output.
 - `docs/manual-verification.md` — manual verification checklist per command (workspace convention).
 - `claude plugin eval` — postponed to v2 (YAGNI).

@@ -1,0 +1,8 @@
+# Every change needs the maintainer's review. Security-sensitive paths are listed explicitly.
+*                  @Wellsonr
+/hooks/            @Wellsonr
+/scripts/          @Wellsonr
+/commands/         @Wellsonr
+/skills/           @Wellsonr
+/.claude-plugin/   @Wellsonr
+/.github/          @Wellsonr

@@ -20,7 +20,7 @@
 - Exit code contract: `scan.mjs --check` exit 0 = fresh, 1 = drift / catalog missing. `sync.mjs` exit 0 = sync phase completed (per-plugin failures, `marketplace update` failures, and throws from `spawn` are all reported in `failed` and DO NOT block the workflow — spec §7); exit 2 = manifest missing, manifest JSON invalid or unreadable, `installed.json` unreadable, or an unexpected failure in the sync phase (`sync failed: …`, last resort). *(Amendment review 2026-10-22: the exit-2 path `sync failed` is enshrined + tested; previously a throw was mislabeled as "manifest.json invalid". Further amendment 2026-10-22: IO vs. JSON errors get separate labels, `installed.json` gets its own label, and spawn throws become `failed` entries — partial results survive.)*
 - Runtime data (`manifest.json`, `rules.md`, `catalog.json`, `catalog.md`) is NEVER committed to the repo.
 - One commit per task, conventional commit messages (`feat:`, `test:`, `docs:`).
-- Working directory for all commands: `/config/workspace/ai/skillset` (polyrepo root `/config/workspace`; DO NOT `git add` files outside this project).
+- Working directory for all commands: `<repo-root>` (polyrepo root `<polyrepo-root>`; DO NOT `git add` files outside this project).
 
 ## Review Focus
 
@@ -43,7 +43,7 @@ Five classes of input/failure most likely to bite, and the tests that guard them
 
 **Interfaces:**
 - Consumes: — (first task)
-- Produces: plugin `skillset` valid according to `claude plugin validate`; marketplace `skillset-local` that makes this repo installable via `claude plugin marketplace add /config/workspace/ai/skillset` → `claude plugin install skillset@skillset-local` (used in Task 9).
+- Produces: plugin `skillset` valid according to `claude plugin validate`; marketplace `skillset-local` that makes this repo installable via `claude plugin marketplace add <path-to-this-repo>` → `claude plugin install skillset@skillset-local` (used in Task 9).
 
 - [ ] **Step 1: Create `.claude-plugin/plugin.json`**
 
@@ -88,7 +88,7 @@ Status: under development — see `docs/superpowers/specs/2026-10-22-skillset-pl
 
 - [ ] **Step 4: Validate**
 
-Run: `claude plugin validate /config/workspace/ai/skillset`
+Run: `claude plugin validate .`
 Expected: passes with no errors (exit 0). If there are structural errors, fix them according to the message before continuing.
 
 - [ ] **Step 5: Commit**
@@ -545,7 +545,7 @@ Expected: 6 tests PASS.
 }
 ```
 
-Replace `REPLACE_ABS_PATH` with the actual absolute path (`/config/workspace/ai/skillset`).
+Replace `REPLACE_ABS_PATH` with the actual absolute path (`<repo-root>`).
 
 Then smoke test: `node scripts/scan.mjs --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → JSON summary + `/tmp/skillset-smoke/catalog.{json,md}` exist; `node scripts/scan.mjs --check ...` → exit 0; change the version in the fixture to `9.9.9` → exit 1; revert it to `1.2.3`.
 
@@ -956,7 +956,7 @@ The rules below apply only within skillset command workflows (`/skillset:make|de
 
 - [ ] **Step 3: Validate structure**
 
-Run: `claude plugin validate /config/workspace/ai/skillset`
+Run: `claude plugin validate .`
 Expected: passes (`skills/` is now detected).
 
 - [ ] **Step 4: Commit**
@@ -1049,7 +1049,7 @@ If the output says the catalog does not exist yet: suggest `/skillset:init`. Do 
 
 - [ ] **Step 5: Validate + commit**
 
-Run: `claude plugin validate /config/workspace/ai/skillset` → passes.
+Run: `claude plugin validate .` → passes.
 
 ```bash
 git add commands/init.md commands/update.md commands/rules.md commands/catalog.md
@@ -1177,7 +1177,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/router/SKILL.md` with the Read tool. For revi
 
 - [ ] **Step 6: Validate + commit**
 
-Run: `claude plugin validate /config/workspace/ai/skillset` → passes.
+Run: `claude plugin validate .` → passes.
 
 ```bash
 git add commands/make.md commands/development.md commands/plan.md commands/execute.md commands/review.md
@@ -1205,7 +1205,7 @@ Claude Code plugin: a single-door router for the skills of all user-scope plugin
 
 ## Install (local marketplace)
 
-    claude plugin marketplace add /config/workspace/ai/skillset
+    claude plugin marketplace add <path-to-this-repo>
     claude plugin install skillset@skillset-local
 
 Restart the Claude Code session after install/update.
@@ -1231,7 +1231,7 @@ Runtime (not part of the repo): `~/.claude/skillset/data/` — `manifest.json`, 
 ## Development
 
     node --test tests/*.test.mjs   # unit tests for all scripts
-    claude plugin validate /config/workspace/ai/skillset
+    claude plugin validate .
 
 Spec: `docs/superpowers/specs/2026-10-22-skillset-plugin-design.md` · Plan: `docs/superpowers/plans/2026-10-22-skillset-plugin.md`
 ```
@@ -1245,7 +1245,7 @@ Perform after install (restart the session). Check off when passed.
 
 ## Unit & structure
 - [ ] `node --test tests/*.test.mjs` → all PASS (lib, scan, sync, query)
-- [ ] `claude plugin validate /config/workspace/ai/skillset` → passes
+- [ ] `claude plugin validate .` → passes
 - [ ] `node scripts/scan.mjs --check --data-dir /tmp/skillset-smoke --plugins-file tests/fixtures/installed.json` → exit 0; change the fixture version → exit 1
 
 ## /skillset:init (end-to-end, touches the real home — that is the plugin's purpose)
@@ -1271,7 +1271,7 @@ Perform after install (restart the session). Check off when passed.
 - [ ] **Step 3: Local install smoke test** — confirm with the user first (this changes the Claude Code user config):
 
 ```
-claude plugin marketplace add /config/workspace/ai/skillset
+claude plugin marketplace add <path-to-this-repo>
 claude plugin install skillset@skillset-local
 ```
 

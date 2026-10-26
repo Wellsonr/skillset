@@ -1,7 +1,7 @@
 {
   "plugins": {
     "demo-plugin@demo-market": [
-      { "scope": "user", "installPath": "/config/workspace/ai/skillset/tests/fixtures/demo-plugin", "version": "1.2.3" }
+      { "scope": "user", "installPath": "tests/fixtures/demo-plugin", "version": "1.2.3" }
     ]
   }
 }
